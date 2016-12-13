@@ -11,5 +11,13 @@ public class ArrayUtil<T> {
 		}
 		return list;
 	}
+	
+	public static String concat(String seperator, String... array){
+		String result = new String();
+		for(int i = 0; i < array.length; i++){
+			result += array[i] + seperator;
+		}
+		return result;
+	}
 
 }

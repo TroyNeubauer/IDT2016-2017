@@ -28,7 +28,7 @@ public class Executor {
 					System.err.println("Process waiting thread was interupted: " + e.getMessage());
 				}
 				//Print out information about the exit code
-				System.out.println("Process " + path + " ended with an exit code of " + exitCode + " (" + (exitCode == 0 ? "No error" : "Error") + ")");
+				System.out.println("Process \"" + path + "\" ended with an exit code of " + exitCode + " (" + (exitCode == 0 ? "No error" : "Error") + ")");
 				// Call the onAction method so that the user of this class knows that the process ended
 				onEnd.onAction();
 			}
@@ -38,16 +38,18 @@ public class Executor {
 		
 	}
 
-	private static Process execute(String jarFilePath, List<String> args) {
+	protected Process execute(String jarFilePath, List<String> args) {
 	    // Create run arguments for the
-
 	    final List<String> actualArgs = new ArrayList<String>();
 	    actualArgs.add(0, "java");
 	    actualArgs.add(1, "-jar");
 	    actualArgs.add(2, jarFilePath);
 	    actualArgs.addAll(args);
+	    
 	    Runtime re = Runtime.getRuntime();
-	    ProcessBuilder pb = new ProcessBuilder(actualArgs.toArray(new String[0]));
+	    String[] arrayArgs = actualArgs.toArray(new String[0]);
+	    
+	    ProcessBuilder pb = new ProcessBuilder(arrayArgs);
 	    pb.redirectError();
 	    pb.redirectOutput();
 	    pb.directory(new File(jarFilePath).getParentFile());
@@ -55,10 +57,10 @@ public class Executor {
 		try {
 			p = pb.start();
 		} catch (IOException e) {
-			System.err.println("Unable to find process at " + jarFilePath);
+			System.err.println("Unable to find file " + jarFilePath);
 			e.printStackTrace();
 		}
-
+		System.out.println("Running process \"" + jarFilePath + "\"");
 
 		return p;
 	}
