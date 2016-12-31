@@ -18,10 +18,7 @@ public class CommandPromptExecutor extends Executor {
 	    actualArgs.add(1, "-jar");
 	    actualArgs.add(2, jarFilePath);
 	    actualArgs.addAll(args);
-	    
-	    Runtime re = Runtime.getRuntime();
-	    String[] arrayArgs = actualArgs.toArray(new String[0]);
-	    
+	    	    
 	    Process p = null;
 	    OutputStream out = null;
 		try {

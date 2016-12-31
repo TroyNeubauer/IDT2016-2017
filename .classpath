@@ -22,10 +22,9 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jars/CommandLineEncryption.jar"/>
-	<classpathentry kind="lib" path="lib/jars/LeetConverter.jar"/>
-	<classpathentry kind="lib" path="lib/jars/RegexPatternMatch.jar"/>
-	<classpathentry kind="lib" path="lib/jars/TesterTypeCheck.jar" sourcepath="lib/jars/TesterTypeCheck.zip"/>
-	<classpathentry kind="lib" path="lib/jacoco/lib/jacocoagent.jar"/>
+	<classpathentry kind="lib" path="jars/CommandLineEncryption.jar"/>
+	<classpathentry kind="lib" path="jars/LeetConverter.jar"/>
+	<classpathentry kind="lib" path="jars/RegexPatternMatch.jar"/>
+	<classpathentry kind="lib" path="jars/TesterTypeCheck.jar" sourcepath="jars/TesterTypeCheck.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

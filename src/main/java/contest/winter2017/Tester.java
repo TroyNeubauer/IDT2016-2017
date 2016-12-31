@@ -36,7 +36,7 @@ import org.jacoco.core.tools.ExecFileLoader;
  * @author IDT
  */
 public class Tester {
-
+	
 	
 	/**
 	 * suffix for all jacoco output files
@@ -132,7 +132,7 @@ public class Tester {
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-
+			System.out.println("CLASS: " + mainClassTestBoundsName);
 			// use reflection to invoke the TestBounds class to get the usage information from the jar
 			Method testBoundsMethod = null;
 			testBoundsMethod = mainClassTestBounds.getMethod("testBounds");

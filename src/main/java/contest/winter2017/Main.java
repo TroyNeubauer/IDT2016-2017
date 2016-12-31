@@ -74,6 +74,8 @@ public class Main {
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
 						tester.executeBasicTests();          // this is the simple testing that we have implemented - likely no need to change this code much
 						tester.executeSecurityTests();       // this is the security vulnerability testing that we want you to implement
+					} else {
+						System.err.println("Tester initilization failed");
 					}
 					
 				// if the user has requested help
