@@ -41,6 +41,22 @@ public class Main {
 	 * alternative cli key for application help
 	 */
 	public static final String ALT_HELP = "h";
+	
+	/**
+	 * cli key for the number of exploratory black box tests to run
+	 */
+	public static final String BLACK_BOX_TESTS = "bbTests";
+	
+	/**
+	 * cli key for the test time goal in minutes
+	 */
+	public static final String TIME_GOAL = "timeGoal";
+	
+	/**
+	 * cli key for limitting the output to contain only the parseable
+	 * YAML report
+	 */
+	public static final String TOOL_CHAIN = "toolChain";
 
 	/**
 	 * Entry-point method for the black-box testing framework
@@ -50,6 +66,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
+
 		CommandLineParser parser = new DefaultParser();
 
 		Options options = new Options();
@@ -58,11 +75,19 @@ public class Main {
 		options.addOption(JACOCO_AGENT_JAR_PATH, true, "path to the jacoco agent jar");
 		options.addOption(HELP, false, "help");
 		options.addOption(ALT_HELP, false, "help");
+		options.addOption(BLACK_BOX_TESTS, true, "number of black box test to be executed");
+		options.addOption(TIME_GOAL, true, "test time goal in minutes");
+		options.addOption(TOOL_CHAIN, false, "output only the YAML report");
 
 		try {
 			CommandLine cliArgs = parser.parse(options, args);
-			if (cliArgs != null) {
+			
 
+			if (cliArgs != null) {
+				//int bbTests = -1;
+				int timeGoal = 0;
+				boolean toolChain = false;
+				
 				// if we have the three arguments we need for exploratory
 				// black-box testing, initialize and execute the tester.
 				if (cliArgs.hasOption(JAR_TO_TEST_PATH) && cliArgs.hasOption(JACOCO_OUTPUT_PATH)
@@ -71,6 +96,8 @@ public class Main {
 					String jarToTestPath = cliArgs.getOptionValue(JAR_TO_TEST_PATH);
 					String jacocoOutputDirPath = cliArgs.getOptionValue(JACOCO_OUTPUT_PATH);
 					String jacocoAgentJarPath = cliArgs.getOptionValue(JACOCO_AGENT_JAR_PATH);
+
+
 
 					// the Tester class contains all of the logic for the
 					// testing framework
@@ -85,9 +112,6 @@ public class Main {
 														// vulnerability testing
 														// that we want you to
 														// implement
-					} else {
-						System.err.println("Tester initilization failed");
-						System.err.println("It really failed");
 					}
 
 					// if the user has requested help
