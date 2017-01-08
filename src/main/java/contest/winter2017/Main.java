@@ -1,12 +1,6 @@
 package contest.winter2017;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.jasypt.encryption.pbe.*;
+import org.apache.commons.cli.*;
 
 /**
  * Entry-point class for the black-box testing framework
@@ -95,12 +89,10 @@ public class Main {
 					String jacocoAgentJarPath = cliArgs.getOptionValue(JACOCO_AGENT_JAR_PATH);
 
 
-
 					// the Tester class contains all of the logic for the
 					// testing framework
 					Tester tester = new Tester();
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
-						
 						int bbTests = -1;
 						int timeGoal = 5;
 						boolean toolChain = false;
@@ -124,12 +116,12 @@ public class Main {
 							timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
 						}
 						
-						//tester.additionalOptions(bbTests, timeGoal, toolChain);
+						tester.setAdditionalOptions(bbTests, timeGoal, toolChain);
 						
 						if(cliArgs.hasOption(TOOL_CHAIN)){
 							toolChain = true;
 						}
-						
+						System.out.println(toolChain + ", " + bbTests);
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
@@ -148,6 +140,11 @@ public class Main {
 
 					// user did not request help and we had an inadequate number
 					// of arguments
+				} else if(cliArgs.hasOption(TOOL_CHAIN)){
+
+					printHelp(options);
+
+					//TODO add toYAML method
 				} else {
 
 					System.out.println("Failed to execute - application requires at least three parameters.");

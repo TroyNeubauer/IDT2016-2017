@@ -72,9 +72,17 @@ public class Tester {
 	 */
 	private int timeGoal;
 	
+	private boolean toolChain;
+	
 	//////////////////////////////////////////
 	// PUBLIC METHODS
 	//////////////////////////////////////////
+	
+	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
+		this.bbTests = bbTests;
+		this.timeGoal = timeGoal;
+		this.toolChain = toolChain;
+	}
 	
 	/**
 	 * Method that will initialize the Framework by loading up the jar to test, and then extracting
@@ -88,13 +96,11 @@ public class Tester {
 	 * @return boolean - false if initialization encounters an Exception, true if it does not
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public boolean init(String initJarToTestPath, String initJacocoOutputDirPath, String initJacocoAgentJarPath, int bbTests, int timeGoal) {
+	public boolean init(String initJarToTestPath, String initJacocoOutputDirPath, String initJacocoAgentJarPath) {
 		
 		this.jarToTestPath = initJarToTestPath;
 		this.jacocoOutputDirPath = initJacocoOutputDirPath;
 		this.jacocoAgentJarPath = initJacocoAgentJarPath;
-		this.bbTests= bbTests;
-		this.timeGoal= timeGoal;
 
 
 		File jarFileToTest = new File(this.jarToTestPath);
