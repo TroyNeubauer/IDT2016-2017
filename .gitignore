@@ -1,1 +1,21 @@
 /target/
+
+#OS junk files
+[Tt]humbs.db
+*.DS_Store
+
+#Eclipse files
+/bin/
+/.classpath
+/.project
+/.settings
+*.class
+
+/.git
+/.gradle/
+/build/
+/IDT_Winter2017_Contest_Requirements.pdf
+/IDT_Winter2017_Contest_Framework_Documentation.pdf
+/jacoco-resources/
+/jacoco/
+/lib/

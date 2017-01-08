@@ -1,32 +1,16 @@
 package contest.winter2017;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.jar.Attributes;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.jar.*;
 
-import org.jacoco.core.analysis.Analyzer;
-import org.jacoco.core.analysis.CoverageBuilder;
-import org.jacoco.core.analysis.IClassCoverage;
-import org.jacoco.core.analysis.ICounter;
-import org.jacoco.core.data.ExecutionData;
-import org.jacoco.core.data.ExecutionDataReader;
-import org.jacoco.core.data.IExecutionDataVisitor;
-import org.jacoco.core.data.ISessionInfoVisitor;
-import org.jacoco.core.data.SessionInfo;
-import org.jacoco.core.tools.ExecFileLoader;
+import org.jacoco.core.analysis.*;
+import org.jacoco.core.data.*;
+import org.jacoco.core.tools.*;
+
+import contest.winter2017.range.*;
 
 /**
  * Class that will handle execution of basic tests and exploratory security test on a black-box executable jar.  
@@ -217,6 +201,10 @@ public class Tester {
 		System.out.println(HORIZONTAL_LINE);
 	}
 	
+	public void executeSecurityTests() {
+		executeSecurityTests(new IntRange(-100, 100), new DoubleRange(-100.0, 100.0), new StringRange("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 1, 100));
+	}
+	
 	
 	/**
 	 * This is the half of the framework that IDT has not completed. We want you to implement your exploratory 
@@ -225,7 +213,7 @@ public class Tester {
 	 * In an effort to demonstrate some of the features of the framework that you can already utilize, we have
 	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
 	 */
-	public void executeSecurityTests() {
+	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
 		
 		/////////// START EXAMPLE CODE /////////////
 		
@@ -255,9 +243,9 @@ public class Tester {
 					List<Object> formatVariableValues = new ArrayList<Object>();
 					for(Class<?> type :potentialParameter.getFormatVariables(parameterString)) {
 						if (type == Integer.class){ 
-							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+							formatVariableValues.add(ints.random());
 						} else if (type == String.class) {
-							formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+							formatVariableValues.add(strings.random());
 						}
 					}
 					
@@ -270,10 +258,10 @@ public class Tester {
 			// if it is not an enumeration parameter, it is either an Integer, Double, or String
 			} else {
 				if (potentialParameter.getType() == Integer.class){ 
-					parameterString = Integer.toString(1) + " ";	// dumb logic - always use '1' for an Integer
+					parameterString = ints.random() + " ";
 					previousParameterStrings.add(parameterString);
 				} else if (potentialParameter.getType() == Double.class) {
-					parameterString = Double.toString(1.0) + " ";	// dumb logic - always use '1.0' for a Double
+					parameterString = doubles.random() + " ";	// dumb logic - always use '1.0' for a Double
 					previousParameterStrings.add(parameterString);
 				} else if (potentialParameter.getType() == String.class) {
 
@@ -284,9 +272,9 @@ public class Tester {
 						List<Object> formatVariableValues = new ArrayList<Object>();
 						for(Class<?> type : potentialParameter.getFormatVariables()) {
 							if (type == Integer.class){ 
-								formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+								formatVariableValues.add(ints.random());
 							} else if (type == String.class) {
-								formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+								formatVariableValues.add(strings.random());
 							}
 						}
 						
@@ -295,7 +283,7 @@ public class Tester {
 								potentialParameter.getFormattedParameter(formatVariableValues);
 					}
 					else {
-						parameterString = "one ";		// dumb logic - always use 'one' for a String
+						parameterString = strings.random();
 					}
 
 					previousParameterStrings.add(parameterString);

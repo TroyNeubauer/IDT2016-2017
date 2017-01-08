@@ -1,12 +1,6 @@
 package contest.winter2017;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.jasypt.encryption.pbe.*;
+import org.apache.commons.cli.*;
 
 /**
  * Entry-point class for the black-box testing framework
@@ -96,7 +90,6 @@ public class Main {
 					String jarToTestPath = cliArgs.getOptionValue(JAR_TO_TEST_PATH);
 					String jacocoOutputDirPath = cliArgs.getOptionValue(JACOCO_OUTPUT_PATH);
 					String jacocoAgentJarPath = cliArgs.getOptionValue(JACOCO_AGENT_JAR_PATH);
-
 
 
 					// the Tester class contains all of the logic for the
