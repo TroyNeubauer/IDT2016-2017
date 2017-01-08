@@ -82,21 +82,46 @@ public class Main {
 				// if we have the three arguments we need for exploratory
 				// black-box testing, initialize and execute the tester.
 				if (cliArgs.hasOption(JAR_TO_TEST_PATH) && cliArgs.hasOption(JACOCO_OUTPUT_PATH)
-						&& cliArgs.hasOption(JACOCO_AGENT_JAR_PATH) && cliArgs.hasOption(BLACK_BOX_TESTS)
-						&& cliArgs.hasOption(TIME_GOAL)) {
+						&& cliArgs.hasOption(JACOCO_AGENT_JAR_PATH)) {
 
 					String jarToTestPath = cliArgs.getOptionValue(JAR_TO_TEST_PATH);
 					String jacocoOutputDirPath = cliArgs.getOptionValue(JACOCO_OUTPUT_PATH);
 					String jacocoAgentJarPath = cliArgs.getOptionValue(JACOCO_AGENT_JAR_PATH);
-					int bbTests= Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
-					int timeGoal= Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
-
 
 
 					// the Tester class contains all of the logic for the
 					// testing framework
 					Tester tester = new Tester();
-					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath, bbTests, timeGoal)) {
+					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
+						int bbTests = -1;
+						int timeGoal = 5;
+						boolean toolChain = false;
+						
+						if(cliArgs.hasOption(BLACK_BOX_TESTS)){
+							if(Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS))<0){
+								System.out.println("A negative number has been entered as an argument for the option bbTests. The argument should be positive.");
+								printHelp(options);
+								return;
+							}
+							bbTests = Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
+						}
+						
+						if(cliArgs.hasOption(TIME_GOAL)){
+							if(Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) < 0){
+								System.out.println("A negative number has been entered as an argument for the option time goal. The argument should be positive.");
+								printHelp(options);
+								return;
+							}
+								
+							timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
+						}
+						
+						tester.setAdditionalOptions(bbTests, timeGoal, toolChain);
+						
+						if(cliArgs.hasOption(TOOL_CHAIN)){
+							toolChain = true;
+						}
+						System.out.println(toolChain + ", " + bbTests);
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
