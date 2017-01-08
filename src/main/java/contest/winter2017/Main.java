@@ -78,24 +78,25 @@ public class Main {
 			
 
 			if (cliArgs != null) {
-				//int bbTests = -1;
-				int timeGoal = 0;
-				boolean toolChain = false;
 				
 				// if we have the three arguments we need for exploratory
 				// black-box testing, initialize and execute the tester.
 				if (cliArgs.hasOption(JAR_TO_TEST_PATH) && cliArgs.hasOption(JACOCO_OUTPUT_PATH)
-						&& cliArgs.hasOption(JACOCO_AGENT_JAR_PATH)) {
+						&& cliArgs.hasOption(JACOCO_AGENT_JAR_PATH) && cliArgs.hasOption(BLACK_BOX_TESTS)
+						&& cliArgs.hasOption(TIME_GOAL)) {
 
 					String jarToTestPath = cliArgs.getOptionValue(JAR_TO_TEST_PATH);
 					String jacocoOutputDirPath = cliArgs.getOptionValue(JACOCO_OUTPUT_PATH);
 					String jacocoAgentJarPath = cliArgs.getOptionValue(JACOCO_AGENT_JAR_PATH);
+					int bbTests= Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
+					int timeGoal= Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
+
 
 
 					// the Tester class contains all of the logic for the
 					// testing framework
 					Tester tester = new Tester();
-					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
+					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath, bbTests, timeGoal)) {
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
@@ -114,6 +115,11 @@ public class Main {
 
 					// user did not request help and we had an inadequate number
 					// of arguments
+				} else if(cliArgs.hasOption(TOOL_CHAIN)){
+
+					printHelp(options);
+
+					//TODO add toYAML method
 				} else {
 
 					System.out.println("Failed to execute - application requires at least three parameters.");

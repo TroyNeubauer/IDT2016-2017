@@ -153,19 +153,12 @@ public class Parameter {
 		this.replaceMePattern = Pattern.compile("<<REPLACE_ME_(STRING|INT)>>");
 		Matcher replaceMeMatcher = replaceMePattern.matcher(format);
 		while(replaceMeMatcher.find()) {
-			switch(replaceMeMatcher.group()) {
-				case "<<REPLACE_ME_STRING>>": {
-					typeList.add(String.class);
-					break;
-				}
-				case "<<REPLACE_ME_INT>>": {
-					typeList.add(Integer.class);
-					break;
-				}
-				default: {
-					//NOP
-					break;
-				}
+			String s = replaceMeMatcher.group();
+			if (s.equals("<<REPLACE_ME_STRING>>")) {
+				typeList.add(String.class);
+			} else if (s.equals("<<REPLACE_ME_INT>>")) {
+				typeList.add(Integer.class);
+			} else {
 			}
 		}
 

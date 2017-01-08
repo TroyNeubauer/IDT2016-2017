@@ -61,7 +61,16 @@ public class Tester {
 	 * parameter factory that can be used to help figure out parameter signatures from the blackbox jars
 	 */
 	private ParameterFactory parameterFactory = null;
-	
+
+	/**
+	 * bbTests is the number of black box tests to execute
+	 */
+	private int bbTests;
+
+	/**
+	 * timeGoal is the amount time in SECONDS that we have to match
+	 */
+	private int timeGoal;
 	
 	//////////////////////////////////////////
 	// PUBLIC METHODS
@@ -74,15 +83,20 @@ public class Tester {
 	 * @param initJarToTestPath - String representing path of the jar to test
 	 * @param initJacocoOutputDirPath - String representing path of the directory jacoco will use for output
 	 * @param initJacocoAgentJarPath - String representing path of the jacoco agent jar
+	 * @param bbTests - integer representing the number of tests we can execute
+	 * @param timeGoal - integer representing the amount of time we have in seconds
 	 * @return boolean - false if initialization encounters an Exception, true if it does not
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public boolean init(String initJarToTestPath, String initJacocoOutputDirPath, String initJacocoAgentJarPath) {
+	public boolean init(String initJarToTestPath, String initJacocoOutputDirPath, String initJacocoAgentJarPath, int bbTests, int timeGoal) {
 		
 		this.jarToTestPath = initJarToTestPath;
 		this.jacocoOutputDirPath = initJacocoOutputDirPath;
 		this.jacocoAgentJarPath = initJacocoAgentJarPath;
-		
+		this.bbTests= bbTests;
+		this.timeGoal= timeGoal;
+
+
 		File jarFileToTest = new File(this.jarToTestPath);
 		this.jacocoOutputFilePath = this.jacocoOutputDirPath+"\\"+jarFileToTest.getName().replaceAll("\\.", "_")+JACOCO_OUTPUT_FILE_SUFFIX;
 		
@@ -138,8 +152,7 @@ public class Tester {
 				this.tests.add(new Test((Map)inTest));
 			}
 
-		} catch (IOException|IllegalAccessException | IllegalArgumentException | InvocationTargetException | 
-				InstantiationException | NoSuchMethodException | SecurityException | NullPointerException e) {
+		} catch (Exception e) {
 			// if we have an exception during initialization, display the error to the user and return a false status
 			System.out.println("ERROR: An exception occurred during initialization.");
 			e.printStackTrace();
