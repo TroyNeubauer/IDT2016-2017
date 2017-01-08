@@ -139,6 +139,7 @@ public class Tester {
 			mainClassTestBoundsInstance = mainClassTestBounds.newInstance();
 
 			Map<String, Object> mainClassTestBoundsMap = null;
+			// Runs the testBounds method
 			mainClassTestBoundsMap =
 					(Map<String, Object>)testBoundsMethod.invoke(mainClassTestBoundsInstance);
 
