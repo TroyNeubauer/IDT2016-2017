@@ -84,9 +84,6 @@ public class Main {
 			
 
 			if (cliArgs != null) {
-				//int bbTests = -1;
-				int timeGoal = 0;
-				boolean toolChain = false;
 				
 				// if we have the three arguments we need for exploratory
 				// black-box testing, initialize and execute the tester.
@@ -103,6 +100,36 @@ public class Main {
 					// testing framework
 					Tester tester = new Tester();
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
+						
+						int bbTests = -1;
+						int timeGoal = 5;
+						boolean toolChain = false;
+						
+						if(cliArgs.hasOption(BLACK_BOX_TESTS)){
+							if(Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS))<0){
+								System.out.println("A negative number has been entered as an argument for the option bbTests. The argument should be positive.");
+								printHelp(options);
+								return;
+							}
+							bbTests = Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
+						}
+						
+						if(cliArgs.hasOption(TIME_GOAL)){
+							if(Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) < 0){
+								System.out.println("A negative number has been entered as an argument for the option time goal. The argument should be positive.");
+								printHelp(options);
+								return;
+							}
+								
+							timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
+						}
+						
+						//tester.additionalOptions(bbTests, timeGoal, toolChain);
+						
+						if(cliArgs.hasOption(TOOL_CHAIN)){
+							toolChain = true;
+						}
+						
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
