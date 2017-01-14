@@ -10,6 +10,8 @@ import org.jacoco.core.analysis.*;
 import org.jacoco.core.data.*;
 import org.jacoco.core.tools.*;
 
+import com.troyberry.util.*;
+
 import contest.winter2017.range.*;
 
 /**
@@ -217,7 +219,7 @@ public class Tester {
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
-		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + percentCovered + " percent covered");
+		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
 		System.out.println(HORIZONTAL_LINE);
 	}
 	
@@ -234,15 +236,7 @@ public class Tester {
 	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
 	 */
 	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
-		
-		/////////// START EXAMPLE CODE /////////////
-		
-		// This example demonstrates how to use the ParameterFactory to figure out the parameter types of parameters
-		// for each of the jars under test - this can be a difficult task because of the concepts of fixed and
-		// dependent parameters (see the explanation at the top of the ParameterFactory class). As we figure out 
-		// what each parameter type is, we are assigning it a simple (dumb) value so that we can use those parameters 
-		// to execute the black-box jar. By the time we finish this example, we will have an array of concrete 
-		// parameters that we can use to execute the black-box jar.
+		System.out.println("Starting secutiry tests");
 		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
 		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 		Parameter potentialParameter;
@@ -281,7 +275,7 @@ public class Tester {
 					parameterString = ints.random() + " ";
 					previousParameterStrings.add(parameterString);
 				} else if (potentialParameter.getType() == Double.class) {
-					parameterString = doubles.random() + " ";	// dumb logic - always use '1.0' for a Double
+					parameterString = doubles.random() + " ";
 					previousParameterStrings.add(parameterString);
 				} else if (potentialParameter.getType() == String.class) {
 
@@ -412,11 +406,11 @@ public class Tester {
 					}
 				}
 				
-				// if standard out and standard error are not ready, wait for 250ms 
+				// if standard out and standard error are not ready, wait for 5ms 
 				// and try again to monitor the streams
 				if(!outReady && !errReady)  {
 					try {
-						Thread.sleep(250);
+						Thread.sleep(5);
 					} catch (InterruptedException e) {
 						// NOP
 					}
@@ -526,7 +520,7 @@ public class Tester {
 			for (final IClassCoverage cc : coverageBuilder.getClasses()) {
 				
 				// report code coverage from all classes that are not the TestBounds class within the jar
-				if(cc.getName().endsWith("TestBounds") == false) {
+				if(!cc.getName().endsWith("TestBounds")) {
 					total += cc.getInstructionCounter().getTotalCount();
 					total += cc.getBranchCounter().getTotalCount();
 					total += cc.getLineCounter().getTotalCount();
@@ -638,7 +632,7 @@ public class Tester {
 		// Below is the first example of how to tap into code coverage metrics
 		double result = generateSummaryCodeCoverageResults();
 		System.out.println("\n");
-		System.out.println("percent covered: " + result);
+		System.out.println("percent covered: " + StringFormatter.clip(result, 2));
 		
 		// Below is the second example of how to tap into code coverage metrics 
 		System.out.println("\n");
