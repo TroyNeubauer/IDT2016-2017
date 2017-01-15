@@ -96,7 +96,7 @@ public class OHSFile {
 	public List<SecurityTest> getSecutiryTests() {
 		return secutiryTests;
 	}
-	public void addSecutiryTest(SecurityTest test) {
+	public void addSecurityTest(SecurityTest test) {
 		this.secutiryTests.add(test);
 	}
 	
