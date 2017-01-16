@@ -579,9 +579,9 @@ public class Tester {
 				// so we are commenting it out, but it shows that you can get the coverage status of each line
 				// if you wanted to add debug argument to display this level of detail at command line level.... 
 				//
-				for (int i = cc.getFirstLine(); i <= cc.getLastLine(); i++) {
-					executionResults += "Line " + Integer.valueOf(i) + ": " + getStatusString(cc.getLine(i).getStatus()) + "\n";
-				}
+				//for (int i = cc.getFirstLine(); i <= cc.getLastLine(); i++) {
+					//executionResults += "Line " + Integer.valueOf(i) + ": " + getStatusString(cc.getLine(i).getStatus()) + "\n";
+				//}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
