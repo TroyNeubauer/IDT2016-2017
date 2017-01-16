@@ -83,6 +83,7 @@ public class OHSFile {
 		}
 		return result;
 	}
+	
 	public List<BasicTest> getPassedBasicTests() {
 		ArrayList<BasicTest> result = new ArrayList<BasicTest>();
 		for(BasicTest t : basicTests) {
@@ -108,7 +109,8 @@ public class OHSFile {
           System.out.println("Number of predefined tests that failed: "+getFailCount());
           System.out.println("Total code coverage percentage: "+getPercentCoveredForBasicTests()+" Unique error count: "+getFailCount());
           System.out.println("Errors seen: ");
-              System.out.println(getFailedBasicTests());
+          	for(BasicTest t:getPassedBasicTests())
+          		System.out.println("	-"+t.getOutputErr());
 		 
 	}
 	
