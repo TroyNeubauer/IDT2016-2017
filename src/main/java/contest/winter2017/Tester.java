@@ -14,7 +14,7 @@ import com.troyberry.util.*;
 
 import contest.winter2017.range.*;
 
-//import com.esotericsoftware.yamlbeans.YamlWriter;
+import net.sourceforge.yamlbeans.YamlWriter;
 
 /**
  * Class that will handle execution of basic tests and exploratory security test on a black-box executable jar.  
@@ -72,11 +72,16 @@ public class Tester {
 	private int bbTests;
 
 	/**
-	 * timeGoal is the amount time in SECONDS that we have to match
+	 * timeGoal is the amount time in minutes that we have to match
 	 */
 	private int timeGoal;
 	
+	/**
+	 * if true, only the YAML report is in the output
+	 */
 	private boolean toolChain;
+	
+	private LinkedHashMap yamlMap;
 	
 	//////////////////////////////////////////
 	// PUBLIC METHODS

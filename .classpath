@@ -28,6 +28,6 @@
 	<classpathentry kind="lib" path="jars/TesterTypeCheck.jar" sourcepath="jars/TesterTypeCheck.zip"/>
 	<classpathentry kind="lib" path="lib/TroyBerryCore.jar" sourcepath="lib/Troy Berry Core-Source.zip"/>
 	<classpathentry kind="lib" path="C:/Users/Grace/Documents/computer science/projects/IDT/IDT2016-2017/lib/junit-4.4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Grace/Documents/computer science/projects/IDT/IDT2016-2017/lib/yamlbeans-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/yamlbeans-1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
