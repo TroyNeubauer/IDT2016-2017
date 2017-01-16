@@ -250,46 +250,8 @@ public class Tester {
 			String parameterString = "";
 			potentialParameter = potentialParameters.get(0); 
 			
-			//if optional, test it 
-			if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
-			{
-
-				if (potentialParameter.getType() == Integer.class){ //integer branch
-					parameterString = ints.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == Double.class) { //double branch
-					parameterString = doubles.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == String.class) { //string branch
-
-					// if the parameter has internal format (eg. "<number>:<number>PM EST")
-					if(potentialParameter.isFormatted()) {
-
-						// loop over the areas of the format that must be replaced and choose values
-						List<Object> formatVariableValues = new ArrayList<Object>();
-						for(Class<?> type : potentialParameter.getFormatVariables()) {
-							if (type == Integer.class){ 
-								formatVariableValues.add(ints.random());
-							} else if (type == String.class) {
-								formatVariableValues.add(strings.random());
-							}
-						}
-						
-						//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-						parameterString =
-								potentialParameter.getFormattedParameter(formatVariableValues);
-					}
-					else {
-						parameterString = strings.random();
-					}
-
-					previousParameterStrings.add(parameterString);
-				} else {
-					parameterString = "unknown type";
-				}
+			//if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
 			
-			}
-				
 			// an enumeration parameter is one that has multiple options
 			if (potentialParameter.isEnumeration()) {
 				parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
