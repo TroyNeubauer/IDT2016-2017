@@ -16,7 +16,7 @@ public class OHSFile {
 	private byte[] hashOfJarFile = new byte[16];
 	private int passCount, failCount;
 	private float percentCoveredForBasicTests;
-	private int secutiryTestsConducted;
+	private int securityTestsConducted;
 	
 	private List<BasicTest> basicTests = new ArrayList<BasicTest>();
 	private List<SecurityTest> secutiryTests = new ArrayList<SecurityTest>();
