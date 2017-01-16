@@ -144,6 +144,7 @@ public class Main {
 
 					printHelp(options);
 
+
 				} else {
 
 					System.out.println("Failed to execute - application requires at least three parameters.");
