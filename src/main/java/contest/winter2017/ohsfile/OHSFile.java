@@ -101,7 +101,7 @@ public class OHSFile {
 		this.securityTests.add(test);
 	}
 	
-	public void finalFormat()
+	public void toYAML()
 	{
 		
 		  System.out.println("Total predefined tests run: " + securityTestsConducted);

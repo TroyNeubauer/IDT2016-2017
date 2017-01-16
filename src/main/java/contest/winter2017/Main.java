@@ -144,7 +144,6 @@ public class Main {
 
 					printHelp(options);
 
-					//TODO add toYAML method
 				} else {
 
 					System.out.println("Failed to execute - application requires at least three parameters.");
