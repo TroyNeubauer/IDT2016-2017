@@ -12,14 +12,14 @@ public class OHSFile {
 	
 	private int version;
 	private long timestamp;
-	private int secutiryTestOffset;
+	private int securityTestOffset;
 	private byte[] hashOfJarFile = new byte[16];
 	private int passCount, failCount;
 	private float percentCoveredForBasicTests;
 	private int securityTestsConducted;
 	
 	private List<BasicTest> basicTests = new ArrayList<BasicTest>();
-	private List<SecurityTest> secutiryTests = new ArrayList<SecurityTest>();
+	private List<SecurityTest> securityTests = new ArrayList<SecurityTest>();
 	
 	/**
 	 * TODO
@@ -37,11 +37,11 @@ public class OHSFile {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	public int getSecutiryTestOffset() {
-		return secutiryTestOffset;
+	public int getSecurityTestOffset() {
+		return securityTestOffset;
 	}
-	public void setSecutiryTestOffset(int secutiryTestOffset) {
-		this.secutiryTestOffset = secutiryTestOffset;
+	public void setSecurityTestOffset(int securityTestOffset) {
+		this.securityTestOffset = securityTestOffset;
 	}
 	public byte[] getHashOfJarFile() {
 		return hashOfJarFile;
@@ -67,11 +67,11 @@ public class OHSFile {
 	public void setPercentCoveredForBasicTests(float percentCoveredForBasicTests) {
 		this.percentCoveredForBasicTests = percentCoveredForBasicTests;
 	}
-	public int getSecutiryTestsConducted() {
-		return secutiryTestsConducted;
+	public int getSecurityTestsConducted() {
+		return securityTestsConducted;
 	}
-	public void setSecutiryTestsConducted(int secutiryTestsConducted) {
-		this.secutiryTestsConducted = secutiryTestsConducted;
+	public void setSecurityTestsConducted(int securityTestsConducted) {
+		this.securityTestsConducted = securityTestsConducted;
 	}
 	public List<BasicTest> getBasicTests() {
 		return basicTests;
@@ -93,11 +93,11 @@ public class OHSFile {
 	public void addBasicTest(BasicTest test) {
 		this.basicTests.add(test);
 	}
-	public List<SecurityTest> getSecutiryTests() {
-		return secutiryTests;
+	public List<SecurityTest> getSecurityTests() {
+		return securityTests;
 	}
 	public void addSecurityTest(SecurityTest test) {
-		this.secutiryTests.add(test);
+		this.securityTests.add(test);
 	}
 	
 	

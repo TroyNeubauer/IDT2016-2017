@@ -132,7 +132,7 @@ public class Main {
 														// that we want you to
 														// implement
 						/*
-						 * Total predefined tests run: <count here>
+						 * System.out.println("Total predefined tests run: " + <count here>)
                          * Number of predefined tests that passed: <count here>
                          * Number of predefined tests that failed: <count here>
                          * Total code coverage percentage: <percentage as a double here> Unique error count: <count here>
