@@ -242,7 +242,7 @@ public class Tester {
 	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
 	 */
 	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
-		System.out.println("Starting secutiry tests");
+		System.out.println("Starting security tests");
 		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
 		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 		Parameter potentialParameter;
