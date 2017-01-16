@@ -277,13 +277,13 @@ public class Tester {
 				previousParameterStrings.add(parameterString);
 			// if it is not an enumeration parameter, it is either an Integer, Double, or String
 			} else {
-				if (potentialParameter.getType() == Integer.class){ //integer branch
+				if (potentialParameter.getType() == Integer.class){ 
 					parameterString = ints.random() + " ";
 					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == Double.class) { //double branch
+				} else if (potentialParameter.getType() == Double.class) {
 					parameterString = doubles.random() + " ";
 					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == String.class) { //string branch
+				} else if (potentialParameter.getType() == String.class) {
 
 					// if the parameter has internal format (eg. "<number>:<number>PM EST")
 					if(potentialParameter.isFormatted()) {
