@@ -85,9 +85,15 @@ public class Tester {
 	// PUBLIC METHODS
 	//////////////////////////////////////////
 	
+	/**
+	 * Method initializes the additional options specified by the user
+
+	 * @param bbTests - integer representing the number of tests to execute
+	 * @param timeGoal - integer representing the time goal in milliseconds
+	 */
 	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
 		this.bbTests = bbTests;
-		this.timeGoal = timeGoal;
+		this.timeGoal = timeGoal * 60000;
 		this.toolChain = toolChain;
 	}
 	
@@ -221,6 +227,7 @@ public class Tester {
 				}
 			}
 			System.out.println(HORIZONTAL_LINE);
+			bbTests--;
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
@@ -245,7 +252,7 @@ public class Tester {
 		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
 		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 		Parameter potentialParameter;
-		while (!potentialParameters.isEmpty()) {
+		while (!potentialParameters.isEmpty() && System.currentTimeMillis() - startTime < timeGoal && bbTests > 0) {
 			String parameterString = "";
 			potentialParameter = potentialParameters.get(0); 
 			
@@ -321,6 +328,7 @@ public class Tester {
 		// and how to access (print to screen) the standard output and error from the run
 		Output output = instrumentAndExecuteCode(parameters);
 		printBasicTestOutput(output); 
+		bbTests--;
 		
 		// We do not intend for this example code to be part of your output. We are only
 		// including the example to show you how you might tap into the code coverage
