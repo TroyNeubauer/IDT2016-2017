@@ -13,7 +13,6 @@ import org.jacoco.core.tools.*;
 import com.troyberry.util.*;
 
 import contest.winter2017.range.*;
-import com.esotericsoftware.yamlbeans.YamlWriter;
 
 /**
  * Class that will handle execution of basic tests and exploratory security test on a black-box executable jar.  
@@ -80,7 +79,7 @@ public class Tester {
 	 */
 	private boolean toolChain;
 	
-	private LinkedHashMap yamlMap;
+	private long startTime = System.currentTimeMillis();
 	
 	//////////////////////////////////////////
 	// PUBLIC METHODS
