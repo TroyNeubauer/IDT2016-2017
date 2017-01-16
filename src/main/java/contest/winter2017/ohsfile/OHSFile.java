@@ -15,7 +15,7 @@ public class OHSFile {
 	private int securityTestOffset;
 	private byte[] hashOfJarFile = new byte[16];
 	private int passCount, failCount;
-	private float percentCoveredForBasicTests;
+	private double percentCoveredForBasicTests;
 	private int securityTestsConducted;
 	
 	private List<BasicTest> basicTests = new ArrayList<BasicTest>();
@@ -61,7 +61,7 @@ public class OHSFile {
 	public void setFailCount(int failCount) {
 		this.failCount = failCount;
 	}
-	public float getPercentCoveredForBasicTests() {
+	public double getPercentCoveredForBasicTests() {
 		return percentCoveredForBasicTests;
 	}
 	public void setPercentCoveredForBasicTests(float percentCoveredForBasicTests) {
@@ -100,6 +100,17 @@ public class OHSFile {
 		this.securityTests.add(test);
 	}
 	
+	public void finalFormat()
+	{
+		
+		  System.out.println("Total predefined tests run: " + securityTestsConducted);
+          System.out.println("Number of predefined tests that passed: "+getPassCount());
+          System.out.println("Number of predefined tests that failed: "+getFailCount());
+          System.out.println("Total code coverage percentage: "+getPercentCoveredForBasicTests()+" Unique error count: "+getFailCount());
+          System.out.println("Errors seen: ");
+              System.out.println(getFailedBasicTests());
+		 
+	}
 	
 	
 }
