@@ -249,54 +249,31 @@ public class Tester {
 	 */
 	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
 		System.out.println("Starting security tests");
+		
+		int passCount = 0;
+		int failCount = 0;
+		
 		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
 		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 		Parameter potentialParameter;
-		while (!potentialParameters.isEmpty() && System.currentTimeMillis() - startTime < timeGoal && bbTests > 0) {
-			String parameterString = "";
-			potentialParameter = potentialParameters.get(0); 
-			
-			//if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
-			
-			// an enumeration parameter is one that has multiple options
-			if (potentialParameter.isEnumeration()) {
-				parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+		while(System.currentTimeMillis() - startTime < timeGoal && bbTests > 0){
+			//performs one test
+			while (!potentialParameters.isEmpty()) {
+				String parameterString = "";
+				potentialParameter = potentialParameters.get(0); 
 				
-				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(potentialParameter.isFormatted()) {
+				//if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
+				
+				// an enumeration parameter is one that has multiple options
+				if (potentialParameter.isEnumeration()) {
+					parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
 					
-					// loop over the areas of the format that must be replaced and choose values
-					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class<?> type :potentialParameter.getFormatVariables(parameterString)) {
-						if (type == Integer.class){ 
-							formatVariableValues.add(ints.random());
-						} else if (type == String.class) {
-							formatVariableValues.add(strings.random());
-						}
-					}
-					
-					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					parameterString =
-							potentialParameter.getFormattedParameter(
-									parameterString, formatVariableValues);
-				}
-				previousParameterStrings.add(parameterString);
-			// if it is not an enumeration parameter, it is either an Integer, Double, or String
-			} else {
-				if (potentialParameter.getType() == Integer.class){ //integer branch
-					parameterString = ints.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == Double.class) { //double branch
-					parameterString = doubles.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == String.class) { //string branch
-
 					// if the parameter has internal format (eg. "<number>:<number>PM EST")
 					if(potentialParameter.isFormatted()) {
-
+						
 						// loop over the areas of the format that must be replaced and choose values
 						List<Object> formatVariableValues = new ArrayList<Object>();
-						for(Class<?> type : potentialParameter.getFormatVariables()) {
+						for(Class<?> type :potentialParameter.getFormatVariables(parameterString)) {
 							if (type == Integer.class){ 
 								formatVariableValues.add(ints.random());
 							} else if (type == String.class) {
@@ -306,30 +283,74 @@ public class Tester {
 						
 						//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
 						parameterString =
-								potentialParameter.getFormattedParameter(formatVariableValues);
+								potentialParameter.getFormattedParameter(
+										parameterString, formatVariableValues);
 					}
-					else {
-						parameterString = strings.random();
-					}
-
 					previousParameterStrings.add(parameterString);
+				// if it is not an enumeration parameter, it is either an Integer, Double, or String
 				} else {
-					parameterString = "unknown type";
+					if (potentialParameter.getType() == Integer.class){ //integer branch
+						parameterString = ints.random() + " ";
+						previousParameterStrings.add(parameterString);
+					} else if (potentialParameter.getType() == Double.class) { //double branch
+						parameterString = doubles.random() + " ";
+						previousParameterStrings.add(parameterString);
+					} else if (potentialParameter.getType() == String.class) { //string branch
+	
+						// if the parameter has internal format (eg. "<number>:<number>PM EST")
+						if(potentialParameter.isFormatted()) {
+	
+							// loop over the areas of the format that must be replaced and choose values
+							List<Object> formatVariableValues = new ArrayList<Object>();
+							for(Class<?> type : potentialParameter.getFormatVariables()) {
+								if (type == Integer.class){ 
+									formatVariableValues.add(ints.random());
+								} else if (type == String.class) {
+									formatVariableValues.add(strings.random());
+								}
+							}
+							
+							//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+							parameterString =
+									potentialParameter.getFormattedParameter(formatVariableValues);
+						}
+						else {
+							parameterString = strings.random();
+						}
+	
+						previousParameterStrings.add(parameterString);
+					} else {
+						parameterString = "unknown type";
+					}
 				}
+				// because of the challenge associated with dependent parameters, we must go one parameter
+				// at a time, building up the parameter list - getNext is the method that we are using 
+				// to get the next set of options, given an accumulating parameter list. 
+				potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 			}
-			// because of the challenge associated with dependent parameters, we must go one parameter
-			// at a time, building up the parameter list - getNext is the method that we are using 
-			// to get the next set of options, given an accumulating parameter list. 
-			potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+			Object[] parameters = previousParameterStrings.toArray();
+			
+			// This example demonstrates how to execute the black-box jar with concrete parameters
+			// and how to access (print to screen) the standard output and error from the run
+			Output output = instrumentAndExecuteCode(parameters);
+			printBasicTestOutput(output); 
+			
+			//if there is an unexpected error string, the jar failed and failCount is incremented
+			if(!output.getStdOutString().equals("")){//*add if error is expected or not*
+				System.out.println("security test result: FAIL ");
+				failCount++;
+			} else{
+				System.out.println("security test result: PASS ");
+				passCount++;
+			}
+			
+			System.out.println(HORIZONTAL_LINE);
+			bbTests--;
 		}
-		Object[] parameters = previousParameterStrings.toArray();
 		
-		// This example demonstrates how to execute the black-box jar with concrete parameters
-		// and how to access (print to screen) the standard output and error from the run
-		Output output = instrumentAndExecuteCode(parameters);
-		printBasicTestOutput(output); 
-		bbTests--;
-		
+		double percentCovered = generateSummaryCodeCoverageResults();
+		System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+		System.out.println(HORIZONTAL_LINE);
 		// We do not intend for this example code to be part of your output. We are only
 		// including the example to show you how you might tap into the code coverage
 		// results that we are generating with jacoco
