@@ -70,17 +70,15 @@ public class Tester {
 	private int bbTests;
 
 	/**
-	 * timeGoal is the amount time in minutes that we have to match
+	 * timeGoal is the amount time in milliseconds that we have to match
 	 */
-	private int timeGoal;
+	private long timeGoal;
 	
 	/**
 	 * if true, only the YAML report is in the output
 	 */
 	private boolean toolChain;
-	
-	private long startTime = System.currentTimeMillis();
-	
+		
 	//////////////////////////////////////////
 	// PUBLIC METHODS
 	//////////////////////////////////////////
@@ -93,7 +91,7 @@ public class Tester {
 	 */
 	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
 		this.bbTests = bbTests;
-		this.timeGoal = timeGoal * 60000;
+		this.timeGoal = timeGoal * 60000L;
 		this.toolChain = toolChain;
 	}
 	
@@ -236,8 +234,8 @@ public class Tester {
 	}
 	
 	
-	public void executeSecurityTests(List<Object[]> allParameters, long maxTime, IntRange ints, DoubleRange doubles, StringRange strings) {
-		long timeToEnd = System.currentTimeMillis() + maxTime;
+	public void executeSecurityTests(List<Object[]> allParameters, IntRange ints, DoubleRange doubles, StringRange strings) {
+		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
 		int testIteration = 0;
 		for(Object[] parameters : allParameters) {
