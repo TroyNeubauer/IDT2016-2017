@@ -8,9 +8,9 @@ public class SecurityTestParameters {
 	/*
 	 * creates an array of all the parameters to be tested by the code
 	 */
-	public static List<Object> generateArray()
+	public static List<Object[]> generateArray()
 	{
-		List<Object> parameterList= new ArrayList<Object>();
+		List<Object[]> parameterList= new ArrayList<Object[]>();
 		return parameterList;
 	}
 

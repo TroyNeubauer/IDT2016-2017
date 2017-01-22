@@ -3,6 +3,7 @@ package contest.winter2017;
 import org.apache.commons.cli.*;
 
 import contest.winter2017.ohsfile.SecurityTestParameters;
+import contest.winter2017.range.*;
 
 /**
  * Entry-point class for the black-box testing framework
@@ -130,7 +131,7 @@ public class Main {
 													// need to change this code
 													// much
 						//TODO pseudo values have been set for the rnages, fix later
-						tester.executeSecurityTests(SecurityTestParameters.generateArray(), new IntRange(-100,100), new DoubleRange(-100,100), new StringRange("abc",0,100)); // this is the security
+						tester.executeSecurityTests(SecurityTestParameters.generateArray(), new IntRange(-100,100), new DoubleRange(-100.0,100.0), new StringRange("abc",0,100)); // this is the security
 														// vulnerability testing
 														// that we want you to
 														// implement
