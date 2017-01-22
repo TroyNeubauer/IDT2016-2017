@@ -12,6 +12,7 @@ import org.jacoco.core.tools.*;
 
 import com.troyberry.util.*;
 
+import contest.winter2017.Parameter;
 import contest.winter2017.range.*;
 
 /**
@@ -234,17 +235,12 @@ public class Tester {
 	}
 	
 	
-	public void executeSecurityTests(List<Object[]> allParameters, IntRange ints, DoubleRange doubles, StringRange strings) {
+	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
 		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
 		int testIteration = 0;
-		for(Object[] parameters : allParameters) {
-			if(System.currentTimeMillis() > timeToEnd) { // We are done, over time limit
-				
-			}
-			if(testIteration > bbTests) { // More that bbTests, we are done
-				
-			}
+		//ends when reaches time limit
+		while(System.currentTimeMillis() < timeToEnd) {
 			Output output = instrumentAndExecuteCode(parameters);
 			printBasicTestOutput(output);
 			
@@ -253,6 +249,18 @@ public class Tester {
 		}
 
 		
+	}
+	
+	public List<List<Parameter>> getPotentialParameterLists()
+	{
+		List<List<Parameter>> potentialParameterLists = new ArrayList<List<Parameter>>();
+		int numberOfOptionalParams = 0;
+		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
+		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+		while (!potentialParameters.isEmpty()) {
+			
+		}
+		return potentialParameterLists;
 	}
 	
 	
