@@ -2,6 +2,8 @@ package contest.winter2017;
 
 import org.apache.commons.cli.*;
 
+import contest.winter2017.ohsfile.SecurityTestParameters;
+
 /**
  * Entry-point class for the black-box testing framework
  * 
@@ -127,7 +129,8 @@ public class Main {
 													// implemented - likely no
 													// need to change this code
 													// much
-						tester.executeSecurityTests(); // this is the security
+						//TODO pseudo values have been set for the rnages, fix later
+						tester.executeSecurityTests(SecurityTestParameters.generateArray(), new IntRange(-100,100), new DoubleRange(-100,100), new StringRange("abc",0,100)); // this is the security
 														// vulnerability testing
 														// that we want you to
 														// implement
