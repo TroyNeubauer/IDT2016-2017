@@ -241,6 +241,7 @@ public class Tester {
 		int testIteration = 0;
 		//ends when reaches time limit
 		while(System.currentTimeMillis() < timeToEnd) {
+			Object[] parameters = new Object[10];//dummy
 			Output output = instrumentAndExecuteCode(parameters);
 			printBasicTestOutput(output);
 			
