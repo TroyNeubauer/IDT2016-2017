@@ -103,8 +103,6 @@ public class Tester {
 	 * @param initJarToTestPath - String representing path of the jar to test
 	 * @param initJacocoOutputDirPath - String representing path of the directory jacoco will use for output
 	 * @param initJacocoAgentJarPath - String representing path of the jacoco agent jar
-	 * @param bbTests - integer representing the number of tests we can execute
-	 * @param timeGoal - integer representing the amount of time we have in seconds
 	 * @return boolean - false if initialization encounters an Exception, true if it does not
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
