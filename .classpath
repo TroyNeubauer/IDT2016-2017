@@ -26,6 +26,7 @@
 	<classpathentry kind="lib" path="jars/LeetConverter.jar"/>
 	<classpathentry kind="lib" path="jars/RegexPatternMatch.jar"/>
 	<classpathentry kind="lib" path="jars/TesterTypeCheck.jar" sourcepath="jars/TesterTypeCheck.zip"/>
-	<classpathentry kind="lib" path="lib/TroyBerryCore.jar" sourcepath="lib/Troy Berry Core-Source.zip"/>
+	<classpathentry kind="lib" path="lib/yamlbeans-1.11.jar" sourcepath="lib/yamlbeans-1.11.zip"/>
+	<classpathentry kind="lib" path="lib/Troy Berry Core.jar" sourcepath="lib/Troy Berry Core -Source.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

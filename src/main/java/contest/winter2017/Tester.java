@@ -10,6 +10,8 @@ import org.jacoco.core.analysis.*;
 import org.jacoco.core.data.*;
 import org.jacoco.core.tools.*;
 
+import com.troyberry.util.*;
+
 import contest.winter2017.range.*;
 
 /**
@@ -68,19 +70,28 @@ public class Tester {
 	private int bbTests;
 
 	/**
-	 * timeGoal is the amount time in SECONDS that we have to match
+	 * timeGoal is the amount time in milliseconds that we have to match
 	 */
-	private int timeGoal;
+	private long timeGoal;
 	
+	/**
+	 * if true, only the YAML report is in the output
+	 */
 	private boolean toolChain;
-	
+		
 	//////////////////////////////////////////
 	// PUBLIC METHODS
 	//////////////////////////////////////////
 	
+	/**
+	 * Method initializes the additional options specified by the user
+
+	 * @param bbTests - integer representing the number of tests to execute
+	 * @param timeGoal - integer representing the time goal in milliseconds
+	 */
 	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
 		this.bbTests = bbTests;
-		this.timeGoal = timeGoal;
+		this.timeGoal = timeGoal * 60000L;
 		this.toolChain = toolChain;
 	}
 	
@@ -176,7 +187,7 @@ public class Tester {
 	 * directly from the executable jar. We are able to run the tests and assess the output as PASS/FAIL.
 	 * 
 	 * You likely do not have to change this part of the framework. We are considering this complete and 
-	 * want your team to focus more on the SecurityTests.  
+	 * want your team to focus more on the SecurityTests.
 	 */
 	public void executeBasicTests() {
 		
@@ -214,121 +225,33 @@ public class Tester {
 				}
 			}
 			System.out.println(HORIZONTAL_LINE);
+			bbTests--;
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
-		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + percentCovered + " percent covered");
+		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
 		System.out.println(HORIZONTAL_LINE);
 	}
 	
-	public void executeSecurityTests() {
-		executeSecurityTests(new IntRange(-100, 100), new DoubleRange(-100.0, 100.0), new StringRange("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 1, 100));
-	}
 	
-	
-	/**
-	 * This is the half of the framework that IDT has not completed. We want you to implement your exploratory 
-	 * security vulnerability testing here.
-	 * 
-	 * In an effort to demonstrate some of the features of the framework that you can already utilize, we have
-	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
-	 */
-	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
-		
-		/////////// START EXAMPLE CODE /////////////
-		
-		// This example demonstrates how to use the ParameterFactory to figure out the parameter types of parameters
-		// for each of the jars under test - this can be a difficult task because of the concepts of fixed and
-		// dependent parameters (see the explanation at the top of the ParameterFactory class). As we figure out 
-		// what each parameter type is, we are assigning it a simple (dumb) value so that we can use those parameters 
-		// to execute the black-box jar. By the time we finish this example, we will have an array of concrete 
-		// parameters that we can use to execute the black-box jar.
-		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
-		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
-		Parameter potentialParameter;
-		while (!potentialParameters.isEmpty()) {
-			String parameterString = "";
-			potentialParameter = potentialParameters.get(0); 
-			
-			//if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
-			
-			// an enumeration parameter is one that has multiple options
-			if (potentialParameter.isEnumeration()) {
-				parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+	public void executeSecurityTests(List<Object[]> allParameters, IntRange ints, DoubleRange doubles, StringRange strings) {
+		long timeToEnd = System.currentTimeMillis() + timeGoal;
+		System.out.println("Starting security tests");
+		int testIteration = 0;
+		for(Object[] parameters : allParameters) {
+			if(System.currentTimeMillis() > timeToEnd) { // We are done, over time limit
 				
-				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(potentialParameter.isFormatted()) {
-					
-					// loop over the areas of the format that must be replaced and choose values
-					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class<?> type :potentialParameter.getFormatVariables(parameterString)) {
-						if (type == Integer.class){ 
-							formatVariableValues.add(ints.random());
-						} else if (type == String.class) {
-							formatVariableValues.add(strings.random());
-						}
-					}
-					
-					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					parameterString =
-							potentialParameter.getFormattedParameter(
-									parameterString, formatVariableValues);
-				}
-				previousParameterStrings.add(parameterString);
-			// if it is not an enumeration parameter, it is either an Integer, Double, or String
-			} else {
-				if (potentialParameter.getType() == Integer.class){ 
-					parameterString = ints.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == Double.class) {
-					parameterString = doubles.random() + " ";	// dumb logic - always use '1.0' for a Double
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == String.class) {
-
-					// if the parameter has internal format (eg. "<number>:<number>PM EST")
-					if(potentialParameter.isFormatted()) {
-
-						// loop over the areas of the format that must be replaced and choose values
-						List<Object> formatVariableValues = new ArrayList<Object>();
-						for(Class<?> type : potentialParameter.getFormatVariables()) {
-							if (type == Integer.class){ 
-								formatVariableValues.add(ints.random());
-							} else if (type == String.class) {
-								formatVariableValues.add(strings.random());
-							}
-						}
-						
-						//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-						parameterString =
-								potentialParameter.getFormattedParameter(formatVariableValues);
-					}
-					else {
-						parameterString = strings.random();
-					}
-
-					previousParameterStrings.add(parameterString);
-				} else {
-					parameterString = "unknown type";
-				}
 			}
-			// because of the challenge associated with dependent parameters, we must go one parameter
-			// at a time, building up the parameter list - getNext is the method that we are using 
-			// to get the next set of options, given an accumulating parameter list. 
-			potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+			if(testIteration > bbTests) { // More that bbTests, we are done
+				
+			}
+			Output output = instrumentAndExecuteCode(parameters);
+			printBasicTestOutput(output);
+			
+			showCodeCoverageResultsExample();
+			testIteration++;
 		}
-		Object[] parameters = previousParameterStrings.toArray();
-		
-		// This example demonstrates how to execute the black-box jar with concrete parameters
-		// and how to access (print to screen) the standard output and error from the run
-		Output output = instrumentAndExecuteCode(parameters);
-		printBasicTestOutput(output); 
-		
-		// We do not intend for this example code to be part of your output. We are only
-		// including the example to show you how you might tap into the code coverage
-		// results that we are generating with jacoco
-		showCodeCoverageResultsExample();
 
-		/////////// END EXAMPLE CODE ////////////// 
 		
 	}
 	
@@ -412,11 +335,11 @@ public class Tester {
 					}
 				}
 				
-				// if standard out and standard error are not ready, wait for 250ms 
+				// if standard out and standard error are not ready, wait for 5ms 
 				// and try again to monitor the streams
 				if(!outReady && !errReady)  {
 					try {
-						Thread.sleep(250);
+						Thread.sleep(5);
 					} catch (InterruptedException e) {
 						// NOP
 					}
@@ -526,7 +449,7 @@ public class Tester {
 			for (final IClassCoverage cc : coverageBuilder.getClasses()) {
 				
 				// report code coverage from all classes that are not the TestBounds class within the jar
-				if(cc.getName().endsWith("TestBounds") == false) {
+				if(!cc.getName().endsWith("TestBounds")) {
 					total += cc.getInstructionCounter().getTotalCount();
 					total += cc.getBranchCounter().getTotalCount();
 					total += cc.getLineCounter().getTotalCount();
@@ -580,7 +503,7 @@ public class Tester {
 				// if you wanted to add debug argument to display this level of detail at command line level.... 
 				//
 				//for (int i = cc.getFirstLine(); i <= cc.getLastLine(); i++) {
-				//	executionResults += "Line " + Integer.valueOf(i) + ": " + getStatusString(cc.getLine(i).getStatus()) + "\n";
+					//executionResults += "Line " + Integer.valueOf(i) + ": " + getStatusString(cc.getLine(i).getStatus()) + "\n";
 				//}
 			}
 		} catch (IOException e) {
@@ -638,7 +561,7 @@ public class Tester {
 		// Below is the first example of how to tap into code coverage metrics
 		double result = generateSummaryCodeCoverageResults();
 		System.out.println("\n");
-		System.out.println("percent covered: " + result);
+		System.out.println("percent covered: " + StringFormatter.clip(result, 2));
 		
 		// Below is the second example of how to tap into code coverage metrics 
 		System.out.println("\n");

@@ -1,4 +1,4 @@
-/target/
+/target
 
 #OS junk files
 [Tt]humbs.db
@@ -18,4 +18,3 @@
 /IDT_Winter2017_Contest_Framework_Documentation.pdf
 /jacoco-resources/
 /jacoco/
-/lib/

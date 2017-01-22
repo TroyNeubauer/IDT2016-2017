@@ -93,13 +93,13 @@ public class Main {
 					// testing framework
 					Tester tester = new Tester();
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
-						int bbTests = -1;
+						int bbTests = 1000;
 						int timeGoal = 5;
 						boolean toolChain = false;
 						
 						if(cliArgs.hasOption(BLACK_BOX_TESTS)){
 							if(Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS))<0){
-								System.out.println("A negative number has been entered as an argument for the option bbTests. The argument should be positive.");
+								System.out.println("An illegal argument was entered. Please enter a positive integer.");
 								printHelp(options);
 								return;
 							}
@@ -108,7 +108,7 @@ public class Main {
 						
 						if(cliArgs.hasOption(TIME_GOAL)){
 							if(Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) < 0){
-								System.out.println("A negative number has been entered as an argument for the option time goal. The argument should be positive.");
+								System.out.println("An illegal argument was entered. Please enter a positive integer.");
 								printHelp(options);
 								return;
 							}
@@ -144,7 +144,7 @@ public class Main {
 
 					printHelp(options);
 
-					//TODO add toYAML method
+
 				} else {
 
 					System.out.println("Failed to execute - application requires at least three parameters.");
