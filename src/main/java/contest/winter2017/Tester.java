@@ -189,7 +189,7 @@ public class Tester {
 	 * directly from the executable jar. We are able to run the tests and assess the output as PASS/FAIL.
 	 * 
 	 * You likely do not have to change this part of the framework. We are considering this complete and 
-	 * want your team to focus more on the SecurityTests.  
+	 * want your team to focus more on the SecurityTests.
 	 */
 	public void executeBasicTests() {
 		
@@ -235,10 +235,6 @@ public class Tester {
 		System.out.println(HORIZONTAL_LINE);
 	}
 	
-	public void executeSecurityTests() {
-		executeSecurityTests(new IntRange(-100, 100), new DoubleRange(-100.0, 100.0), new StringRange("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 1, 100));
-	}
-	
 	
 	/**
 	 * This is the half of the framework that IDT has not completed. We want you to implement your exploratory 
@@ -247,95 +243,24 @@ public class Tester {
 	 * In an effort to demonstrate some of the features of the framework that you can already utilize, we have
 	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
 	 */
-	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
+	public void executeSecurityTests(List<Object[]> allParameters, long maxTime, IntRange ints, DoubleRange doubles, StringRange strings) {
+		long timeToEnd = System.currentTimeMillis() + maxTime;
 		System.out.println("Starting security tests");
-		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
-		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
-		Parameter potentialParameter;
-		while (!potentialParameters.isEmpty() && System.currentTimeMillis() - startTime < timeGoal && bbTests > 0) {
-			String parameterString = "";
-			potentialParameter = potentialParameters.get(0); 
-			
-			//if(potentialParameter.isOptional())  //TODO? - your team might want to look at this flag and handle it as well!
-			
-			// an enumeration parameter is one that has multiple options
-			if (potentialParameter.isEnumeration()) {
-				parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+		int testIteration = 0;
+		for(Object[] parameters : allParameters) {
+			if(System.currentTimeMillis() > timeToEnd) { // We are done, over time limit
 				
-				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(potentialParameter.isFormatted()) {
-					
-					// loop over the areas of the format that must be replaced and choose values
-					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class<?> type :potentialParameter.getFormatVariables(parameterString)) {
-						if (type == Integer.class){ 
-							formatVariableValues.add(ints.random());
-						} else if (type == String.class) {
-							formatVariableValues.add(strings.random());
-						}
-					}
-					
-					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					parameterString =
-							potentialParameter.getFormattedParameter(
-									parameterString, formatVariableValues);
-				}
-				previousParameterStrings.add(parameterString);
-			// if it is not an enumeration parameter, it is either an Integer, Double, or String
-			} else {
-				if (potentialParameter.getType() == Integer.class){ //integer branch
-					parameterString = ints.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == Double.class) { //double branch
-					parameterString = doubles.random() + " ";
-					previousParameterStrings.add(parameterString);
-				} else if (potentialParameter.getType() == String.class) { //string branch
-
-					// if the parameter has internal format (eg. "<number>:<number>PM EST")
-					if(potentialParameter.isFormatted()) {
-
-						// loop over the areas of the format that must be replaced and choose values
-						List<Object> formatVariableValues = new ArrayList<Object>();
-						for(Class<?> type : potentialParameter.getFormatVariables()) {
-							if (type == Integer.class){ 
-								formatVariableValues.add(ints.random());
-							} else if (type == String.class) {
-								formatVariableValues.add(strings.random());
-							}
-						}
-						
-						//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-						parameterString =
-								potentialParameter.getFormattedParameter(formatVariableValues);
-					}
-					else {
-						parameterString = strings.random();
-					}
-
-					previousParameterStrings.add(parameterString);
-				} else {
-					parameterString = "unknown type";
-				}
 			}
-			// because of the challenge associated with dependent parameters, we must go one parameter
-			// at a time, building up the parameter list - getNext is the method that we are using 
-			// to get the next set of options, given an accumulating parameter list. 
-			potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+			if(testIteration > bbTests) { // More that bbTests, we are done
+				
+			}
+			Output output = instrumentAndExecuteCode(parameters);
+			printBasicTestOutput(output);
+			
+			showCodeCoverageResultsExample();
+			testIteration++;
 		}
-		Object[] parameters = previousParameterStrings.toArray();
-		
-		// This example demonstrates how to execute the black-box jar with concrete parameters
-		// and how to access (print to screen) the standard output and error from the run
-		Output output = instrumentAndExecuteCode(parameters);
-		printBasicTestOutput(output); 
-		bbTests--;
-		
-		// We do not intend for this example code to be part of your output. We are only
-		// including the example to show you how you might tap into the code coverage
-		// results that we are generating with jacoco
-		showCodeCoverageResultsExample();
 
-		/////////// END EXAMPLE CODE ////////////// 
 		
 	}
 	
