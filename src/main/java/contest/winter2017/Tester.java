@@ -236,13 +236,6 @@ public class Tester {
 	}
 	
 	
-	/**
-	 * This is the half of the framework that IDT has not completed. We want you to implement your exploratory 
-	 * security vulnerability testing here.
-	 * 
-	 * In an effort to demonstrate some of the features of the framework that you can already utilize, we have
-	 * provided some example code in the method. The examples only demonstrate how to use existing functionality. 
-	 */
 	public void executeSecurityTests(List<Object[]> allParameters, long maxTime, IntRange ints, DoubleRange doubles, StringRange strings) {
 		long timeToEnd = System.currentTimeMillis() + maxTime;
 		System.out.println("Starting security tests");
