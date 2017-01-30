@@ -79,6 +79,21 @@ public class Tester {
 	 * if true, only the YAML report is in the output
 	 */
 	private boolean toolChain;
+	
+	/**
+	 * number of passed security tests
+	 */
+	private int securityTestsPassCount = 0;
+	
+	/**
+	 * number of failed security tests
+	 */
+	private int securityTestsFailCount = 0;
+	
+	/**
+	 * array list of unique errors seen
+	 */
+	ArrayList<String> errors = new ArrayList<String>();
 		
 	//////////////////////////////////////////
 	// PUBLIC METHODS
@@ -224,7 +239,6 @@ public class Tester {
 				}
 			}
 			System.out.println(HORIZONTAL_LINE);
-			bbTests--;
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
@@ -234,32 +248,98 @@ public class Tester {
 	
 	
 	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
+		System.out.println();
 		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
-		int testIteration = 0;
-		//ends when reaches time limit
-		while(System.currentTimeMillis() < timeToEnd) {
-			Object[] parameters = new Object[10];//dummy
-			Output output = instrumentAndExecuteCode(parameters);
-			printBasicTestOutput(output);
+		int testIterations = 0;
+		int passCount = 0;
+		int failCount = 0;
+		
+		//each row represents a different parameter
+		//the first index of the column is the type, the subsequent index hold values to test
+		List<List<Parameter>> potentialParametersLists = new ArrayList<List<Parameter>>();
+		List<String> previousParameterStrings = new ArrayList<String>();
+		
+		//handles dependent
+		if(!this.parameterFactory.isBounded()){
+			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
+			List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
+			for(int k = 0; k < enumeratedParameters.size(); k++){
+				ArrayList<String> dummy = new ArrayList<String>();
+				dummy.add(enumeratedParameters.get(k));
+				List<Parameter> potentialParameters = this.parameterFactory.getNext(dummy);
+				potentialParametersLists.add(potentialParameters);
+			}
 			
-			showCodeCoverageResultsExample();
-			testIteration++;
+			//starting tests
+			
+			//tests expecting black box to pass
+			//runs with a blank argument and with an argument with only a string as an argument
+			Object[] firstTests = {"", "random+sStrinG023;.1"};
+			for(int k = 0; k<firstTests.length; k++){
+				testIterations++;
+				Object[] toTest = {firstTests[k]};
+				executeAndPrintResults(toTest, false);
+			}
+			
+			while(System.currentTimeMillis() < timeToEnd){
+				
+			}
+			
 		}
+		
+		//handles fixed
+		else{
+			
+		}
+		
+		//System.out.println(enumeratedParameters);
+//		List<List<Parameter>> potentialParameterLists = getPotentialParameterLists();
+//		System.out.println(potentialParameterLists);
+//		//ends when reaches time limit
+//		//while(System.currentTimeMillis() < timeToEnd) {
+//			//Object[] parameters = new Object[10];//dummy
+//			
+//			//generates values where no errors are expected and instruments and executes
+//			//generateExpectedPassValues();
+//			
+//			//generates values an error message is expected
+//			//generateExpectedFailValues();
+//			
+//			//Output output = instrumentAndExecuteCode(parameters);
+//			//printBasicTestOutput(output);
+//			
+//			showCodeCoverageResultsExample();
+//			testIteration++;
+//		//}
 
 		
 	}
 	
-	public List<List<Parameter>> getPotentialParameterLists()
-	{
-		List<List<Parameter>> potentialParameterLists = new ArrayList<List<Parameter>>();
-		int numberOfOptionalParams = 0;
-		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
-		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
-		while (!potentialParameters.isEmpty()) {
-			
+	public void executeAndPrintResults(Object[] toTest, boolean errorExpected){
+		Output output = instrumentAndExecuteCode(toTest);
+		printBasicTestOutput(output);
+		if(!errorExpected){
+			if(output.getStdErrString().length() > 0){
+				securityTestsFailCount++;
+				System.out.println("security test result: FAIL");
+			} else{
+				securityTestsPassCount++;
+				System.out.println("security test result: PASS");
+			}
+		} else//if error was expected, the security test passes no matter what
+			securityTestsPassCount++;
+		//if error is unique, adds it to the errors arrayList
+		if(output.getStdErrString()!=""){
+			boolean uniqueError = true;
+			for(int k = 0; k < errors.size(); k++){
+				if(output.getStdErrString().equals(errors.get(k)))
+					uniqueError = false;
+			}
+			if(uniqueError)
+				errors.add(output.getStdErrString());
 		}
-		return potentialParameterLists;
+		System.out.println(HORIZONTAL_LINE);
 	}
 	
 	
