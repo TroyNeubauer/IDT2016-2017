@@ -247,7 +247,7 @@ public class Tester {
 	}
 	
 	
-	public void executeSecurityTests(IntRange ints, DoubleRange doubles, StringRange strings) {
+	public void executeSecurityTests() {
 		System.out.println();
 		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
@@ -256,7 +256,7 @@ public class Tester {
 		int failCount = 0;
 		
 		//each row represents a different parameter
-		//the first index of the column is the type, the subsequent index hold values to test
+		//each row holds a parameter we need to test
 		List<List<Parameter>> potentialParametersLists = new ArrayList<List<Parameter>>();
 		List<String> previousParameterStrings = new ArrayList<String>();
 		
@@ -264,12 +264,17 @@ public class Tester {
 		if(!this.parameterFactory.isBounded()){
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
+			
 			for(int k = 0; k < enumeratedParameters.size(); k++){
 				ArrayList<String> dummy = new ArrayList<String>();
 				dummy.add(enumeratedParameters.get(k));
 				List<Parameter> potentialParameters = this.parameterFactory.getNext(dummy);
+				while(!potentialParameters.isEmpty()){//make a dummy previous parameter strings using the generate values method?
+					//potentialParameters.getNext(dummy);
+				}
 				potentialParametersLists.add(potentialParameters);
 			}
+			
 			
 			//starting tests
 			
@@ -282,6 +287,7 @@ public class Tester {
 				executeAndPrintResults(toTest, false);
 			}
 			
+				
 			while(System.currentTimeMillis() < timeToEnd){
 				
 			}
@@ -316,6 +322,85 @@ public class Tester {
 		
 	}
 	
+	/**
+	 * Method will return an array of 10 values that corresponds to the type and passed into the method.
+	 * We generate 10 values at a time so we don't have the need to constantly call this method.
+	 * 
+	 * @param parameter is the parameter that different values will be generated from
+	 */
+	public ArrayList<String> generateValues(Parameter parameter){
+		//make a range object later
+		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
+		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+		Parameter potentialParameter = potentialParameters.get(0);
+		String parameterString = "";
+		if (potentialParameter.isEnumeration()) {
+			parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+			
+			// if the parameter has internal format (eg. "<number>:<number>PM EST")
+			if(potentialParameter.isFormatted()) {
+				
+				// loop over the areas of the format that must be replaced and choose values
+				List<Object> formatVariableValues = new ArrayList<Object>();
+				for(Class type :potentialParameter.getFormatVariables(parameterString)) {
+					if (type == Integer.class){ 
+						formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+					} else if (type == String.class) {
+						formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+					}
+				}
+				
+				//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+				parameterString =
+						potentialParameter.getFormattedParameter(
+								parameterString, formatVariableValues);
+			}
+			previousParameterStrings.add(parameterString);
+		// if it is not an enumeration parameter, it is either an Integer, Double, or String
+		} else {
+			if (potentialParameter.getType() == Integer.class){ 
+				parameterString = Integer.toString(1) + " ";	// dumb logic - always use '1' for an Integer
+				previousParameterStrings.add(parameterString);
+			} else if (potentialParameter.getType() == Double.class) {
+				parameterString = Double.toString(1.0) + " ";	// dumb logic - always use '1.0' for a Double
+				previousParameterStrings.add(parameterString);
+			} else if (potentialParameter.getType() == String.class) {
+
+				// if the parameter has internal format (eg. "<number>:<number>PM EST")
+				if(potentialParameter.isFormatted()) {
+
+					// loop over the areas of the format that must be replaced and choose values
+					List<Object> formatVariableValues = new ArrayList<Object>();
+					for(Class type : potentialParameter.getFormatVariables()) {
+						if (type == Integer.class){ 
+							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+						} else if (type == String.class) {
+							formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+						}
+					}
+					
+					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+					parameterString =
+							potentialParameter.getFormattedParameter(formatVariableValues);
+				}
+				else {
+					parameterString = "one ";		// dumb logic - always use 'one' for a String
+				}
+
+				previousParameterStrings.add(parameterString);
+			} else {
+				parameterString = "unknown type";
+			}
+		}
+		return parameterString;
+	}
+	
+	/**
+	 * Method will execute an individual security test and print its results.
+	 * 
+	 * @param toTest is the array of parameters to be passed into the instrumentAndExecuteCode method
+	 * @param errorExpected is true if the individual security test is expected to have an error, false if not
+	 */
 	public void executeAndPrintResults(Object[] toTest, boolean errorExpected){
 		Output output = instrumentAndExecuteCode(toTest);
 		printBasicTestOutput(output);

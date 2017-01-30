@@ -18,5 +18,13 @@ public class IntRange extends NumberRange<Integer> {
 		return Maths.randRange(getMin(), getMax());
 	}
 	
+	/**
+	 * returns an array of typical edge cases for an integer
+	 */
+	public Integer[] generalEdgeCases(){
+		Integer[] output = {0, -50, Integer.MAX_VALUE, Integer.MIN_VALUE};
+		return output;
+	}
+	
 	
 }

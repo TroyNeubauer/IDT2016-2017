@@ -130,8 +130,8 @@ public class Main {
 													// implemented - likely no
 													// need to change this code
 													// much
-						//TODO pseudo values have been set for the rnages, fix later
-						tester.executeSecurityTests(new IntRange(-100,100), new DoubleRange(-100.0,100.0), new StringRange("abc",0,100)); // this is the security
+						//TODO pseudo values have been set for the ranges, fix later
+						tester.executeSecurityTests();//new IntRange(-100,100), new DoubleRange(-100.0,100.0), new StringRange("abc",0,100)); // this is the security
 														// vulnerability testing
 														// that we want you to
 														// implement

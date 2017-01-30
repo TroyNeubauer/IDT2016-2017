@@ -17,5 +17,4 @@ public class DoubleRange extends NumberRange<Double> {
 	public Double random() {
 		return Maths.randRange(getMin(), getMax());
 	}
-	
 }

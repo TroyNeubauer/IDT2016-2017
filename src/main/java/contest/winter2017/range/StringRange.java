@@ -42,6 +42,14 @@ public class StringRange extends Range<String> {
 		return result;
 	}
 	
+	/**
+	 * returns an array of typical string edge cases
+	 */
+	public String[] generalEdgeCases(){
+		String[] output = {""};
+		return output;
+	}
+	
 	
 
 }
