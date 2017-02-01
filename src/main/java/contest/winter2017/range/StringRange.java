@@ -9,9 +9,19 @@ public class StringRange extends Range<String> {
 	
 	/**
 	 * Creates a new String Range which represents a how a random string should be calculated.
+	 */
+	public StringRange() {
+		super();
+		this.minLength = 1;
+		this.maxLength = 1000;
+		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+[]{};':\",./<>?`~";
+	}
+	
+	/**
+	 * Creates a new String Range which represents a how a random string should be calculated.
 	 * @param charSet The characters that can be in a randomly generated string
 	 * @param minLength The minimum length that the string can be
-	 * @param maxLength The maxiumn length that the string can be
+	 * @param maxLength The maximum length that the string can be
 	 */
 	public StringRange(String charSet, int minLength, int maxLength) {
 		super();

@@ -117,4 +117,26 @@ public class ParameterFactory {
 		return possibleParamsList;
 	}
 	
+	
+	/**
+	 * Method returns the a list of fixed parameters if the one exists in the inputMap.
+	 * 
+	 * @return List of Parameter objects containing all metadata known about the each Parameter from
+	 * the fixed parameters lists. If no fixed parameter list exists, the method returns null.
+	 */
+	public List<Parameter> getFixedParametersList(){
+		if(this.inputMap.get("fixed parameter list")!=null){
+			List fixedParamList = (List) this.inputMap.get("fixed parameter list");
+			List<Parameter> returnList = new ArrayList<Parameter>();
+			//converts values to parameters and adds them to the return list
+			for(int k = 0; k < fixedParamList.size(); k++){
+				Map paramMap = (Map) fixedParamList.get(k);
+				returnList.add(new Parameter(paramMap));
+			}
+			return returnList;
+			}
+		else
+			return null;
+	}
+	
 }

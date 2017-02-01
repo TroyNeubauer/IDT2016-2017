@@ -256,23 +256,55 @@ public class Tester {
 		int failCount = 0;
 		
 		//each row represents a different parameter
-		//each row holds a parameter we need to test
-		List<List<Parameter>> potentialParametersLists = new ArrayList<List<Parameter>>();
+		//each row holds a parameter we need to test in the first index, values in the subsequent indexes
+		//UPDATE 1/30 - holds a different dependent parameter in each row. subsequent values are values to test. know if dependent if it has a dependent param map
+		List<List<Parameter>> dependentPotentialParametersLists = new ArrayList<List<Parameter>>();
 		List<String> previousParameterStrings = new ArrayList<String>();
 		
 		//handles dependent
 		if(!this.parameterFactory.isBounded()){
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
-			List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
+			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
+			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
+			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(previousParameterStrings).get(0), 0);//formats them as well
+			//corresponds to the rows of dependentPotentialParameterLists
+			List<String> enumeratedParametersDependent = new ArrayList<String>();
 			
-			for(int k = 0; k < enumeratedParameters.size(); k++){
-				ArrayList<String> dummy = new ArrayList<String>();
-				dummy.add(enumeratedParameters.get(k));
-				List<Parameter> potentialParameters = this.parameterFactory.getNext(dummy);
-				while(!potentialParameters.isEmpty()){//make a dummy previous parameter strings using the generate values method?
-					//potentialParameters.getNext(dummy);
+			for(int k = enumeratedParametersNondependent.size() -1; k >=0; k--){
+				//need an array list to get the next potential parameter
+				ArrayList<String> dummyPrevParamString = new ArrayList<String>();
+				dummyPrevParamString.add(enumeratedParametersNondependent.get(k));
+				//puts enumerated value as first index
+				List<Parameter> potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
+				
+				//enumerated value is a dependent parameter
+				if(!potentialParameters.isEmpty()){
+					enumeratedParametersDependent.add(0,enumeratedParametersNondependent.get(k));
+					dependentPotentialParametersLists.add(0,potentialParameters);//adds the dependent parameter to a row
+					
+					// dummyPrevParamString used only to find other potential parameters for a dependent parameter
+					dummyPrevParamString = new ArrayList<String>();
+					dummyPrevParamString.add(enumeratedParametersNondependent.get(k));//will be "--Integer" or something
+					while(!potentialParameters.isEmpty()){//make a dummy previous parameter strings using the generate values method?
+						//check if its an enumeration. if it is, get the list of enumerations and you can start testing that
+						
+						dummyPrevParamString.add(generateValues(potentialParameters.get(potentialParameters.size()-1), 1).get(0));
+						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
+						if(!potentialParameters.isEmpty())
+							dependentPotentialParametersLists.get(0).add(potentialParameters.get(0));
+					}
+					enumeratedParametersNondependent.remove(k);
 				}
-				potentialParametersLists.add(potentialParameters);
+				
+				
+			}
+			
+			//just stuff to make sure everything works -- delete later
+			System.out.println("nondependent enums: " + enumeratedParametersNondependent);
+			for(int k = 0; k < dependentPotentialParametersLists.size(); k++){
+				System.out.println("type: " + dependentPotentialParametersLists.get(k).get(0).getType());
+				System.out.println("enum: " + enumeratedParametersDependent.get(k));
+				System.out.println("dependentPotentialParameters: " + dependentPotentialParametersLists.get(k));
 			}
 			
 			
@@ -288,15 +320,17 @@ public class Tester {
 			}
 			
 				
-			while(System.currentTimeMillis() < timeToEnd){
+			/*while(System.currentTimeMillis() < timeToEnd){
 				
-			}
+			}*/
 			
 		}
 		
 		//handles fixed
 		else{
+			List<Parameter> fixedParameters = this.parameterFactory.getFixedParametersList();
 			
+			//starting tests
 		}
 		
 		//System.out.println(enumeratedParameters);
@@ -323,55 +357,62 @@ public class Tester {
 	}
 	
 	/**
-	 * Method will return an array of 10 values that corresponds to the type and passed into the method.
-	 * We generate 10 values at a time so we don't have the need to constantly call this method.
+	 * Method will return an List of values that corresponds to the type and passed into the method.
 	 * 
 	 * @param parameter is the parameter that different values will be generated from
+	 * @param length is the number of values in the returned array list. If length is 0,
+	 * the number of values in the array list depends on the parameter. If the parameter is an
+	 * enumeration, it will return all the enumerated values.
 	 */
-	public ArrayList<String> generateValues(Parameter parameter){
-		//make a range object later
-		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
-		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
-		Parameter potentialParameter = potentialParameters.get(0);
-		String parameterString = "";
-		if (potentialParameter.isEnumeration()) {
-			parameterString = potentialParameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+	public List<String> generateValues(Parameter parameter, int length){
+		//make a range object later?
+//		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
+//		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+//		Parameter potentialParameter = potentialParameters.get(0);
+		List<String> parameterStrings = new ArrayList<String>();
+		//if parameter is an enumeration, the method returns the enumerated values
+		if (parameter.isEnumeration()) {//if the parameter is an enumeration, the execute security tests method should have already known this and should plan accordingly
+			List<String> enumeratedValues = parameter.getEnumerationValues();
+//			parameterStrings = parameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
 			
-			// if the parameter has internal format (eg. "<number>:<number>PM EST")
-			if(potentialParameter.isFormatted()) {
-				
-				// loop over the areas of the format that must be replaced and choose values
-				List<Object> formatVariableValues = new ArrayList<Object>();
-				for(Class type :potentialParameter.getFormatVariables(parameterString)) {
-					if (type == Integer.class){ 
-						formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
-					} else if (type == String.class) {
-						formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+			//if any enumerated values are formatted, the appropriate values are replaced
+			for(int k = 0; k < enumeratedValues.size(); k++){
+				// if the parameter has internal format (eg. "<number>:<number>PM EST")
+				if(parameter.isFormatted()) {//should this go above the forloop?]
+					// loop over the areas of the format that must be replaced and choose values
+					List<Object> formatVariableValues = new ArrayList<Object>();
+					for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
+						if (type == Integer.class){ 
+							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+						} else if (type == String.class) {
+							formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+						}
 					}
+					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+					enumeratedValues.set(k,
+							parameter.getFormattedParameter(
+									enumeratedValues.get(k), formatVariableValues));
+					/*parameterString =
+							parameter.getFormattedParameter(
+									parameterString, formatVariableValues);*/
 				}
-				
-				//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-				parameterString =
-						potentialParameter.getFormattedParameter(
-								parameterString, formatVariableValues);
+				//previousParameterStrings.add(parameterString);
 			}
-			previousParameterStrings.add(parameterString);
+			return enumeratedValues;
 		// if it is not an enumeration parameter, it is either an Integer, Double, or String
 		} else {
-			if (potentialParameter.getType() == Integer.class){ 
-				parameterString = Integer.toString(1) + " ";	// dumb logic - always use '1' for an Integer
-				previousParameterStrings.add(parameterString);
-			} else if (potentialParameter.getType() == Double.class) {
-				parameterString = Double.toString(1.0) + " ";	// dumb logic - always use '1.0' for a Double
-				previousParameterStrings.add(parameterString);
-			} else if (potentialParameter.getType() == String.class) {
+			if (parameter.getType() == Integer.class){ 
+				parameterStrings.add(Integer.toString(1) + " ");	// dumb logic - always use '1' for an Integer
+			} else if (parameter.getType() == Double.class) {
+				parameterStrings.add(Double.toString(1.0) + " ");	// dumb logic - always use '1.0' for a Double
+			} else if (parameter.getType() == String.class) {
 
 				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(potentialParameter.isFormatted()) {
+				if(parameter.isFormatted()) {
 
 					// loop over the areas of the format that must be replaced and choose values
 					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class type : potentialParameter.getFormatVariables()) {
+					for(Class type : parameter.getFormatVariables()) {
 						if (type == Integer.class){ 
 							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
 						} else if (type == String.class) {
@@ -380,19 +421,18 @@ public class Tester {
 					}
 					
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					parameterString =
-							potentialParameter.getFormattedParameter(formatVariableValues);
+					parameterStrings.add(
+							parameter.getFormattedParameter(formatVariableValues));
 				}
 				else {
-					parameterString = "one ";		// dumb logic - always use 'one' for a String
+					parameterStrings.add("one ");		// dumb logic - always use 'one' for a String
 				}
 
-				previousParameterStrings.add(parameterString);
 			} else {
-				parameterString = "unknown type";
+				parameterStrings.add("unknown type");//should we do something about this
 			}
 		}
-		return parameterString;
+		return parameterStrings;
 	}
 	
 	/**
