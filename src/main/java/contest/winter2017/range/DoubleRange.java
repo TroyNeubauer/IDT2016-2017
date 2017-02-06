@@ -25,11 +25,20 @@ public class DoubleRange extends NumberRange<Double> {
 		return Maths.randRange(getMin(), getMax());
 	}
 	
+	
 	/**
 	 * returns an array of typical edge cases for a double
 	 */
 	public Double[] generalEdgeCases(){
 		Double[] output = {0.0, -50.0, Double.MAX_VALUE, Double.MIN_VALUE};
 		return output;
+	}
+	
+	public void setMin(Double newMin){
+		super.setMin(newMin);
+	}
+	
+	public void setMax(Double newMax){
+		super.setMax(newMax);
 	}
 }

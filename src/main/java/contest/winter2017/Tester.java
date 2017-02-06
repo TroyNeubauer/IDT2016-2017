@@ -411,11 +411,23 @@ public class Tester {
 		// if it is not an enumeration parameter, it is either an Integer, Double, or String
 		} else {
 			if (parameter.getType() == Integer.class){ 
-				Range range= new IntRange();
+				IntRange range= new IntRange();
+				if(parameter.getMax() != null){
+					range.setMax((Integer)parameter.getMax());
+				}
+				if(parameter.getMin() != null){
+					range.setMin((Integer)parameter.getMin());
+				}
 				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1' for an Integer
 			} else if (parameter.getType() == Double.class) {//all the if statements may not be necessary
-				Range range= new DoubleRange();
-				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1.0' for a Double
+				DoubleRange range= new DoubleRange();
+				if(parameter.getMax() != null){
+					range.setMax((Double)parameter.getMax());
+				}
+				if(parameter.getMin() != null){
+					range.setMin((Double)parameter.getMin());
+				}
+				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1.0' for a Double*/
 			} else if (parameter.getType() == String.class) {
 				Range range = new StringRange();
 
