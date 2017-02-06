@@ -266,7 +266,7 @@ public class Tester {
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
 			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
-			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(previousParameterStrings).get(0), 0);//formats them as well
+			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(previousParameterStrings).get(0));//formats them as well
 			//corresponds to the rows of dependentPotentialParameterLists
 			List<String> enumeratedParametersDependent = new ArrayList<String>();
 			
@@ -288,7 +288,7 @@ public class Tester {
 					while(!potentialParameters.isEmpty()){//make a dummy previous parameter strings using the generate values method?
 						//check if its an enumeration. if it is, get the list of enumerations and you can start testing that
 						
-						dummyPrevParamString.add(generateValues(potentialParameters.get(potentialParameters.size()-1), 1).get(0));
+						dummyPrevParamString.add(generateValues(potentialParameters.get(potentialParameters.size()-1)).get(0));
 						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
 						if(!potentialParameters.isEmpty())
 							dependentPotentialParametersLists.get(0).add(potentialParameters.get(0));
@@ -366,11 +366,11 @@ public class Tester {
 	 * Method will return an List of values that corresponds to the type and passed into the method.
 	 * 
 	 * @param parameter is the parameter that different values will be generated from
-	 * @param length is the number of values in the returned array list. If length is 0,
-	 * the number of values in the array list depends on the parameter. If the parameter is an
-	 * enumeration, it will return all the enumerated values.
+	 * 
+	 * @returns a list containing one value of the type of the parameter that is passed into the
+	 * method. If the parameter is enumerated, it returns a list of enumerated values
 	 */
-	public List<String> generateValues(Parameter parameter, int length){
+	public List<String> generateValues(Parameter parameter){
 		//make a range object later?
 //		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
 //		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
@@ -389,9 +389,11 @@ public class Tester {
 					List<Object> formatVariableValues = new ArrayList<Object>();
 					for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
 						if (type == Integer.class){ 
-							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+							Range range= new IntRange();
+							formatVariableValues.add(range.random()); // dumb logic - always use '1' for an Integer
 						} else if (type == String.class) {
-							formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+							Range range= new StringRange();
+							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
@@ -408,10 +410,13 @@ public class Tester {
 		// if it is not an enumeration parameter, it is either an Integer, Double, or String
 		} else {
 			if (parameter.getType() == Integer.class){ 
-				parameterStrings.add(Integer.toString(1) + " ");	// dumb logic - always use '1' for an Integer
-			} else if (parameter.getType() == Double.class) {
-				parameterStrings.add(Double.toString(1.0) + " ");	// dumb logic - always use '1.0' for a Double
+				Range range= new StringRange();
+				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1' for an Integer
+			} else if (parameter.getType() == Double.class) {//all the if statements may not be necessary
+				Range range= new DoubleRange();
+				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1.0' for a Double
 			} else if (parameter.getType() == String.class) {
+				Range range = new StringRange();
 
 				// if the parameter has internal format (eg. "<number>:<number>PM EST")
 				if(parameter.isFormatted()) {
@@ -420,9 +425,10 @@ public class Tester {
 					List<Object> formatVariableValues = new ArrayList<Object>();
 					for(Class type : parameter.getFormatVariables()) {
 						if (type == Integer.class){ 
-							formatVariableValues.add(new Integer(1)); // dumb logic - always use '1' for an Integer
+							Range intRange= new IntRange();
+							formatVariableValues.add(intRange.random()); // dumb logic - always use '1' for an Integer
 						} else if (type == String.class) {
-							formatVariableValues.add(new String("one")); // dumb logic - always use 'one' for a String
+							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
 					
@@ -431,7 +437,7 @@ public class Tester {
 							parameter.getFormattedParameter(formatVariableValues));
 				}
 				else {
-					parameterStrings.add("one ");		// dumb logic - always use 'one' for a String
+					parameterStrings.add(range.random() + " ");		// dumb logic - always use 'one' for a String
 				}
 
 			} else {
