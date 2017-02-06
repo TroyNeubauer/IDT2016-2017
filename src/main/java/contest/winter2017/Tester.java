@@ -320,9 +320,15 @@ public class Tester {
 			}
 			
 				
-			/*while(System.currentTimeMillis() < timeToEnd){
+			while(System.currentTimeMillis() < timeToEnd){
+				int[] nondependentIndexesToTest = new int[(/*int)(Math.random() * */enumeratedParametersNondependent.size())];
+				int[] dependentIndexesToTest = new int[(/*int)(Math.random() **/ enumeratedParametersDependent.size())];
+				ArrayList<Object> parameters = new ArrayList<Object>();
+				for(int k = 0; k < nondependentIndexesToTest.length; k++){
+					
+				}
 				
-			}*/
+			}
 			
 		}
 		
@@ -440,10 +446,13 @@ public class Tester {
 	 * 
 	 * @param toTest is the array of parameters to be passed into the instrumentAndExecuteCode method
 	 * @param errorExpected is true if the individual security test is expected to have an error, false if not
+	 * 
+	 * @return true if the security test passed, false if not
 	 */
-	public void executeAndPrintResults(Object[] toTest, boolean errorExpected){
+	public boolean executeAndPrintResults(Object[] toTest, boolean errorExpected){
 		Output output = instrumentAndExecuteCode(toTest);
 		printBasicTestOutput(output);
+		boolean passed = false;
 		if(!errorExpected){
 			if(output.getStdErrString().length() > 0){
 				securityTestsFailCount++;
@@ -451,6 +460,7 @@ public class Tester {
 			} else{
 				securityTestsPassCount++;
 				System.out.println("security test result: PASS");
+				passed = true;
 			}
 		} else//if error was expected, the security test passes no matter what
 			securityTestsPassCount++;
@@ -465,6 +475,7 @@ public class Tester {
 				errors.add(output.getStdErrString());
 		}
 		System.out.println(HORIZONTAL_LINE);
+		return passed;
 	}
 	
 	
