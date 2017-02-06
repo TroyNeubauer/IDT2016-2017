@@ -363,7 +363,10 @@ public class Tester {
 				}
 				if(enumeratedParametersDependent.size() == 0)
 					parameters.add((new StringRange()).random());
-				executeAndPrintResults(parameters.toArray(), false);
+				if(executeAndPrintResults(parameters.toArray(), false))
+					passCount++;
+				else
+					failCount++;
 			}
 			
 		}
@@ -380,11 +383,15 @@ public class Tester {
 					parameters[k] = generateValues(fixedParameters.get(k));//wait how does this work generate values returns an arraylist
 					//what if the parameters are enumerated?
 				}
-				executeAndPrintResults(parameters, false);
+				if(executeAndPrintResults(parameters, false))
+					passCount++;
+				else
+					failCount++;
 			}
-			
-			
 		}
+		double percentCovered = generateSummaryCodeCoverageResults();
+		System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+		System.out.println(HORIZONTAL_LINE);
 		
 		//System.out.println(enumeratedParameters);
 //		List<List<Parameter>> potentialParameterLists = getPotentialParameterLists();
