@@ -396,6 +396,7 @@ public class Tester {
 							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
+					System.out.println("formatvariablevalues" + formatVariableValues);
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
 					enumeratedValues.set(k,
 							parameter.getFormattedParameter(
@@ -410,7 +411,7 @@ public class Tester {
 		// if it is not an enumeration parameter, it is either an Integer, Double, or String
 		} else {
 			if (parameter.getType() == Integer.class){ 
-				Range range= new StringRange();
+				Range range= new IntRange();
 				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1' for an Integer
 			} else if (parameter.getType() == Double.class) {//all the if statements may not be necessary
 				Range range= new DoubleRange();

@@ -13,7 +13,7 @@ public class StringRange extends Range<String> {
 	public StringRange() {
 		super();
 		this.minLength = 1;
-		this.maxLength = 1000;
+		this.maxLength = 50;
 		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+[]{};':\",./<>?`~";
 	}
 	

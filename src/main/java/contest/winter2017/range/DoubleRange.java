@@ -8,7 +8,7 @@ public class DoubleRange extends NumberRange<Double> {
 	 * Creates a new DoubleRange object.
 	 */
 	public DoubleRange(){
-		super(Double.MIN_VALUE, Double.MAX_VALUE);
+		super(-10000.0, 10000.0);
 	}
 	
 	/**

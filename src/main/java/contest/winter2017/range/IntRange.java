@@ -8,7 +8,7 @@ public class IntRange extends NumberRange<Integer> {
 	 * Creates a new DoubleRange object.
 	 */
 	public IntRange(){
-		super(Integer.MIN_VALUE, Integer.MAX_VALUE);
+		super(-10000, 10000);
 	}
 
 	/**
