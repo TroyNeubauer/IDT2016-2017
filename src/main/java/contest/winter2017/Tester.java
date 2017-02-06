@@ -295,8 +295,6 @@ public class Tester {
 					}
 					enumeratedParametersNondependent.remove(k);
 				}
-				
-				
 			}
 			
 			//just stuff to make sure everything works -- delete later
