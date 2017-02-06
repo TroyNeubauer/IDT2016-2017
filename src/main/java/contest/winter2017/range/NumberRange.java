@@ -18,6 +18,13 @@ public abstract class NumberRange<T extends Number> extends Range<T> {
 		return max;
 	}
 	
+	public void setMin(T newMin){
+		min = newMin;
+	}
+	
+	public void setMax(T newMax){
+		max = newMax;
+	}
 	
 
 }

@@ -33,5 +33,13 @@ public class IntRange extends NumberRange<Integer> {
 		return output;
 	}
 	
+	public void setMin(Integer newMin){
+		super.setMin(newMin);
+	}
+	
+	public void setMax(Integer newMax){
+		super.setMax(newMax);
+	}
+	
 	
 }
