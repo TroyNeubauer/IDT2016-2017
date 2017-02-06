@@ -107,8 +107,13 @@ public class Tester {
 	 */
 	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
 		this.bbTests = bbTests;
-		this.timeGoal = timeGoal * 60000L;
+		this.timeGoal = timeGoal * 60000;//if user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
 		this.toolChain = toolChain;
+		//default settings for both bbTests and timeGoal
+		if(bbTests == -1 && timeGoal == -1){
+			bbTests = 1000;
+			timeGoal = 300000;//5 minutes in milliseconds
+		}
 	}
 	
 	/**
@@ -251,7 +256,6 @@ public class Tester {
 		System.out.println();
 		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
-		int testIterations = 0;
 		int passCount = 0;
 		int failCount = 0;
 		
@@ -259,14 +263,14 @@ public class Tester {
 		//each row holds a parameter we need to test in the first index, values in the subsequent indexes
 		//UPDATE 1/30 - holds a different dependent parameter in each row. subsequent values are values to test. know if dependent if it has a dependent param map
 		List<List<Parameter>> dependentPotentialParametersLists = new ArrayList<List<Parameter>>();
-		List<String> previousParameterStrings = new ArrayList<String>();
+		//List<String> previousParameterStrings = new ArrayList<String>();
 		
 		//handles dependent
 		if(!this.parameterFactory.isBounded()){
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
 			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
-			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(previousParameterStrings).get(0));//formats them as well
+			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0));//formats them as well
 			//corresponds to the rows of dependentPotentialParameterLists
 			List<String> enumeratedParametersDependent = new ArrayList<String>();
 			
@@ -314,20 +318,52 @@ public class Tester {
 			//runs with a blank argument and with an argument with only a string as an argument
 			Object[] firstTests = {"", "random+sStrinG023;.1"};
 			for(int k = 0; k<firstTests.length; k++){
-				testIterations++;
+				bbTests--;
 				Object[] toTest = {firstTests[k]};
 				executeAndPrintResults(toTest, false);
 			}
 			
-				
-			while(System.currentTimeMillis() < timeToEnd){
-				int[] nondependentIndexesToTest = new int[(/*int)(Math.random() * */enumeratedParametersNondependent.size())];
-				int[] dependentIndexesToTest = new int[(/*int)(Math.random() **/ enumeratedParametersDependent.size())];
-				ArrayList<Object> parameters = new ArrayList<Object>();
-				for(int k = 0; k < nondependentIndexesToTest.length; k++){
-					
+			//RANDOM EVERYTHING
+			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
+			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
+				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
+				List<List<Object>> dependentParameters = new ArrayList<List<Object>>();
+				//fills dependentParameters with random, appropriate values
+				for(int r = 0; r < dependentPotentialParametersLists.size(); r++){
+					dependentParameters.add(new ArrayList<Object>());
+					for(int c = 0; c < dependentPotentialParametersLists.get(r).size(); c++){
+						dependentParameters.get(r).add(generateValues(dependentPotentialParametersLists.get(r).get(c)));//also may not work if generate values returns more than one object??
+					}
+				}
+				//makes deep copy so we can remove values from them later to test and not repeat any of them
+				List<String> enumeratedParametersNondependentCopy = new ArrayList<String>();
+				for(String param : enumeratedParametersNondependent){
+					enumeratedParametersNondependentCopy.add(param);
 				}
 				
+//				int[] nondependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersNondependent.size())];
+//				int[] dependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersDependent.size())];
+//				ArrayList<Object> parameters = new ArrayList<Object>();
+//				for(int k = 0; k < nondependentIndexesToTest.length; k++){
+//					
+//				}
+				List<Object> parameters = new ArrayList<Object>();
+				int numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
+				int numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
+				for(int k = 0; k < numOfNondependentToTest; k++){
+					//removes a nondependent parameter at a random index and adds it to parameters
+					parameters.add(enumeratedParametersNondependentCopy.remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
+				}
+				for(int k = 0; k < numOfDependentToTest; k++){
+					int row = (int)(Math.random() * dependentPotentialParametersLists.size());
+					//removes a dependent parameter at a random index and adds it to parameters
+					for(int c = 0; c < dependentPotentialParametersLists.get(row).size(); c++){
+						parameters.add(dependentPotentialParametersLists.get(row).remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
+					}
+				}
+				if(enumeratedParametersDependent.size() == 0)
+					parameters.add((new StringRange()).random());
+				executeAndPrintResults(parameters.toArray(), false);
 			}
 			
 		}
@@ -336,15 +372,18 @@ public class Tester {
 		else{
 			List<Parameter> fixedParameters = this.parameterFactory.getFixedParametersList();
 			Object[] parameters = new Object[fixedParameters.size()];
+			
+			//starting tests
 			//RANDOM EVERYTHING
-			while(System.currentTimeMillis() < timeToEnd){
+			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
 				for(int k = 0; k<parameters.length; k++){
-					parameters[k] = generateValues(fixedParameters.get(k));
+					parameters[k] = generateValues(fixedParameters.get(k));//wait how does this work generate values returns an arraylist
+					//what if the parameters are enumerated?
 				}
 				executeAndPrintResults(parameters, false);
 			}
 			
-			//starting tests
+			
 		}
 		
 		//System.out.println(enumeratedParameters);

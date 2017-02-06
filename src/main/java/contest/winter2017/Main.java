@@ -96,8 +96,8 @@ public class Main {
 					// testing framework
 					Tester tester = new Tester();
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
-						int bbTests = 1000;
-						int timeGoal = 5;
+						int bbTests = -1;
+						int timeGoal = -1;
 						boolean toolChain = false;
 						
 						if(cliArgs.hasOption(BLACK_BOX_TESTS)){
@@ -124,7 +124,6 @@ public class Main {
 						if(cliArgs.hasOption(TOOL_CHAIN)){
 							toolChain = true;
 						}
-						System.out.println(toolChain + ", " + bbTests);
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
