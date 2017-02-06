@@ -335,6 +335,14 @@ public class Tester {
 		//handles fixed
 		else{
 			List<Parameter> fixedParameters = this.parameterFactory.getFixedParametersList();
+			Object[] parameters = new Object[fixedParameters.size()];
+			//RANDOM EVERYTHING
+			while(System.currentTimeMillis() < timeToEnd){
+				for(int k = 0; k<parameters.length; k++){
+					parameters[k] = generateValues(fixedParameters.get(k));
+				}
+				executeAndPrintResults(parameters, false);
+			}
 			
 			//starting tests
 		}
@@ -355,7 +363,7 @@ public class Tester {
 //			//Output output = instrumentAndExecuteCode(parameters);
 //			//printBasicTestOutput(output);
 //			
-//			showCodeCoverageResultsExample();
+		showCodeCoverageResultsExample();
 //			testIteration++;
 //		//}
 
@@ -449,7 +457,7 @@ public class Tester {
 							parameter.getFormattedParameter(formatVariableValues));
 				}
 				else {
-					parameterStrings.add(range.random() + " ");		// dumb logic - always use 'one' for a String
+					parameterStrings.add(range.random()+"");		// dumb logic - always use 'one' for a String
 				}
 
 			} else {
