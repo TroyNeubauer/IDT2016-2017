@@ -394,7 +394,6 @@ public class Tester {
 							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
-					System.out.println("formatvariablevalues" + formatVariableValues);
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
 					enumeratedValues.set(k,
 							parameter.getFormattedParameter(
