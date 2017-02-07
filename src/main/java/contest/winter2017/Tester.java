@@ -327,26 +327,21 @@ public class Tester {
 			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
 			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
 				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
-				List<List<Object>> dependentParameters = new ArrayList<List<Object>>();
-				//fills dependentParameters with random, appropriate values
-				for(int r = 0; r < dependentPotentialParametersLists.size(); r++){
-					dependentParameters.add(new ArrayList<Object>());
-					for(int c = 0; c < dependentPotentialParametersLists.get(r).size(); c++){
-						dependentParameters.get(r).add(generateValues(dependentPotentialParametersLists.get(r).get(c)));//also may not work if generate values returns more than one object??
-					}
-				}
+				
 				//makes deep copy so we can remove values from them later to test and not repeat any of them
 				List<String> enumeratedParametersNondependentCopy = new ArrayList<String>();
 				for(String param : enumeratedParametersNondependent){
 					enumeratedParametersNondependentCopy.add(param);
 				}
-				
+//				
+//				
 //				int[] nondependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersNondependent.size())];
 //				int[] dependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersDependent.size())];
 //				ArrayList<Object> parameters = new ArrayList<Object>();
 //				for(int k = 0; k < nondependentIndexesToTest.length; k++){
 //					
 //				}
+				//nondependent
 				List<Object> parameters = new ArrayList<Object>();
 				int numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
 				int numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
@@ -354,13 +349,36 @@ public class Tester {
 					//removes a nondependent parameter at a random index and adds it to parameters
 					parameters.add(enumeratedParametersNondependentCopy.remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
 				}
-				for(int k = 0; k < numOfDependentToTest; k++){
-					int row = (int)(Math.random() * dependentPotentialParametersLists.size());
-					//removes a dependent parameter at a random index and adds it to parameters
-					for(int c = 0; c < dependentPotentialParametersLists.get(row).size(); c++){
-						parameters.add(dependentPotentialParametersLists.get(row).remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
+				
+				//dependent
+				List<List<Object>> dependentParameters = new ArrayList<List<Object>>();
+				//fills dependentParameters with random, appropriate values
+				for(int r = 0; r < dependentPotentialParametersLists.size(); r++){
+					dependentParameters.add(new ArrayList<Object>());
+					for(int c = 0; c < dependentPotentialParametersLists.get(r).size(); c++){
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(r).get(c)).toArray();
+						dependentParameters.get(r).add(possibleValues[(int)(Math.random() * possibleValues.length)]);//also may not work if generate values returns more than one object?? UPDATE - resovled??
 					}
 				}
+				
+				List<String> enumeratedParametersDependentCopy = new ArrayList<String>();
+				for(String param : enumeratedParametersDependent){
+					enumeratedParametersDependentCopy.add(param);
+				}
+				
+				for(int k = 0; k < numOfDependentToTest; k++){
+					int row = (int)(Math.random() * dependentParameters.size());
+					parameters.add(enumeratedParametersDependentCopy.get(row));
+					enumeratedParametersDependentCopy.remove(row);
+					//removes a dependent parameter at a random index and adds it to parameters
+					for(int c = 0; c < dependentParameters.get(row).size(); c++){
+						//if its an enumerated value, it will add a random enumeration
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(row).get(c)).toArray();
+						parameters.add(possibleValues[(int)(Math.random() * possibleValues.length)]);
+					}
+					dependentParameters.remove(row);
+				}
+				
 				if(enumeratedParametersDependent.size() == 0)
 					parameters.add((new StringRange()).random());
 				if(executeAndPrintResults(parameters.toArray(), false))
@@ -380,7 +398,7 @@ public class Tester {
 			//RANDOM EVERYTHING
 			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
 				for(int k = 0; k<parameters.length; k++){
-					parameters[k] = generateValues(fixedParameters.get(k));//wait how does this work generate values returns an arraylist
+					parameters[k] = generateValues(fixedParameters.get(k)).get(0);//wait how does this work generate values returns an arraylist
 					//what if the parameters are enumerated?
 				}
 				if(executeAndPrintResults(parameters, false))
@@ -497,7 +515,6 @@ public class Tester {
 							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
-					
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
 					parameterStrings.add(
 							parameter.getFormattedParameter(formatVariableValues));
