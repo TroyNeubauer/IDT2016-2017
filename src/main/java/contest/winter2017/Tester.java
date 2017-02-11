@@ -13,6 +13,7 @@ import org.jacoco.core.tools.*;
 import com.troyberry.util.*;
 
 import contest.winter2017.Parameter;
+import contest.winter2017.ohsfile.BasicTest;
 import contest.winter2017.range.*;
 
 /**
@@ -80,15 +81,6 @@ public class Tester {
 	 */
 	private boolean toolChain;
 	
-	/**
-	 * number of passed security tests
-	 */
-	private int securityTestsPassCount = 0;
-	
-	/**
-	 * number of failed security tests
-	 */
-	private int securityTestsFailCount = 0;
 	
 	/**
 	 * array list of unique errors seen
@@ -323,9 +315,15 @@ public class Tester {
 				executeAndPrintResults(toTest, false);
 			}
 			
+			/*There are five stages in our black box testing method.
+			 * Stage 1: 1/10th of the tests will test the typical edge cases of the parameter types one parameter at a time (i.e. for an integer, an edge case may be a negative number)
+			 * Stage 2: 1/10th of the tests 
+			 */
+			
 			//RANDOM EVERYTHING
 			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
-			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
+			//while there are still more bbTests to run or there is extra time, tests will continue to be performed
+			while(System.currentTimeMillis() < timeToEnd && bbTests <= 0|| bbTests > 0){
 				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
 				
 				//makes deep copy so we can remove values from them later to test and not repeat any of them
@@ -333,14 +331,7 @@ public class Tester {
 				for(String param : enumeratedParametersNondependent){
 					enumeratedParametersNondependentCopy.add(param);
 				}
-//				
-//				
-//				int[] nondependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersNondependent.size())];
-//				int[] dependentIndexesToTest = new int[(int)(Math.random() * enumeratedParametersDependent.size())];
-//				ArrayList<Object> parameters = new ArrayList<Object>();
-//				for(int k = 0; k < nondependentIndexesToTest.length; k++){
-//					
-//				}
+				
 				//nondependent
 				List<Object> parameters = new ArrayList<Object>();
 				int numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
@@ -385,6 +376,7 @@ public class Tester {
 					passCount++;
 				else
 					failCount++;
+				bbTests--;
 			}
 			
 		}
@@ -448,6 +440,11 @@ public class Tester {
 //		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 //		Parameter potentialParameter = potentialParameters.get(0);
 		List<String> parameterStrings = new ArrayList<String>();
+		
+		//if a parameter is optional, randomly decide whether to use it or not
+		if(parameter.isOptional() && (int)(Math.random() * 2) == 1){
+			
+		}
 		//if parameter is an enumeration, the method returns the enumerated values
 		if (parameter.isEnumeration()) {//if the parameter is an enumeration, the execute security tests method should have already known this and should plan accordingly
 			List<String> enumeratedValues = parameter.getEnumerationValues();
@@ -462,10 +459,10 @@ public class Tester {
 					for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
 						if (type == Integer.class){ 
 							Range range= new IntRange();
-							formatVariableValues.add(range.random()); // dumb logic - always use '1' for an Integer
+							formatVariableValues.add(range.random()); 
 						} else if (type == String.class) {
 							Range range= new StringRange();
-							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
+							formatVariableValues.add(range.random());
 						}
 					}
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
@@ -543,16 +540,14 @@ public class Tester {
 		printBasicTestOutput(output);
 		boolean passed = false;
 		if(!errorExpected){
-			if(output.getStdErrString().length() > 0){
-				securityTestsFailCount++;
+			if(output.getStdErrString().indexOf("Exception") != -1){
 				System.out.println("security test result: FAIL");
 			} else{
-				securityTestsPassCount++;
 				System.out.println("security test result: PASS");
 				passed = true;
 			}
 		} else//if error was expected, the security test passes no matter what
-			securityTestsPassCount++;
+			passed = true;
 		//if error is unique, adds it to the errors arrayList
 		if(output.getStdErrString()!=""){
 			boolean uniqueError = true;
