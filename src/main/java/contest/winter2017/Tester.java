@@ -13,6 +13,7 @@ import org.jacoco.core.tools.*;
 import com.troyberry.util.*;
 
 import contest.winter2017.Parameter;
+import contest.winter2017.ohsfile.BasicTest;
 import contest.winter2017.range.*;
 
 /**
@@ -80,15 +81,6 @@ public class Tester {
 	 */
 	private boolean toolChain;
 	
-	/**
-	 * number of passed security tests
-	 */
-	private int securityTestsPassCount = 0;
-	
-	/**
-	 * number of failed security tests
-	 */
-	private int securityTestsFailCount = 0;
 	
 	/**
 	 * array list of unique errors seen
@@ -107,8 +99,13 @@ public class Tester {
 	 */
 	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
 		this.bbTests = bbTests;
-		this.timeGoal = timeGoal * 60000L;
+		this.timeGoal = timeGoal * 60000;//if user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
 		this.toolChain = toolChain;
+		//default settings for both bbTests and timeGoal
+		if(bbTests == -1 && timeGoal == -1){
+			bbTests = 1000;
+			timeGoal = 300000;//5 minutes in milliseconds
+		}
 	}
 	
 	/**
@@ -251,7 +248,6 @@ public class Tester {
 		System.out.println();
 		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
-		int testIterations = 0;
 		int passCount = 0;
 		int failCount = 0;
 		
@@ -259,14 +255,14 @@ public class Tester {
 		//each row holds a parameter we need to test in the first index, values in the subsequent indexes
 		//UPDATE 1/30 - holds a different dependent parameter in each row. subsequent values are values to test. know if dependent if it has a dependent param map
 		List<List<Parameter>> dependentPotentialParametersLists = new ArrayList<List<Parameter>>();
-		List<String> previousParameterStrings = new ArrayList<String>();
+		//List<String> previousParameterStrings = new ArrayList<String>();
 		
 		//handles dependent
 		if(!this.parameterFactory.isBounded()){
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
 			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
-			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(previousParameterStrings).get(0));//formats them as well
+			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0));//formats them as well
 			//corresponds to the rows of dependentPotentialParameterLists
 			List<String> enumeratedParametersDependent = new ArrayList<String>();
 			
@@ -312,20 +308,73 @@ public class Tester {
 			//runs with a blank argument and with an argument with only a string as an argument
 			Object[] firstTests = {"", "random+sStrinG023;.1"};
 			for(int k = 0; k<firstTests.length; k++){
-				testIterations++;
+				bbTests--;
 				Object[] toTest = {firstTests[k]};
 				executeAndPrintResults(toTest, false);
 			}
 			
+			/*There are five stages in our black box testing method.
+			 * Stage 1: 1/10th of the tests will test the typical edge cases of the parameter types one parameter at a time (i.e. for an integer, an edge case may be a negative number)
+			 * Stage 2: 1/10th of the tests 
+			 */
+			
+			//RANDOM EVERYTHING
+			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
+			//while there are still more bbTests to run or there is extra time, tests will continue to be performed
+			while(System.currentTimeMillis() < timeToEnd && bbTests <= 0|| bbTests > 0){
+				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
 				
-			while(System.currentTimeMillis() < timeToEnd){
-				int[] nondependentIndexesToTest = new int[(/*int)(Math.random() * */enumeratedParametersNondependent.size())];
-				int[] dependentIndexesToTest = new int[(/*int)(Math.random() **/ enumeratedParametersDependent.size())];
-				ArrayList<Object> parameters = new ArrayList<Object>();
-				for(int k = 0; k < nondependentIndexesToTest.length; k++){
-					
+				//makes deep copy so we can remove values from them later to test and not repeat any of them
+				List<String> enumeratedParametersNondependentCopy = new ArrayList<String>();
+				for(String param : enumeratedParametersNondependent){
+					enumeratedParametersNondependentCopy.add(param);
 				}
 				
+				//nondependent
+				List<Object> parameters = new ArrayList<Object>();
+				int numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
+				int numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
+				for(int k = 0; k < numOfNondependentToTest; k++){
+					//removes a nondependent parameter at a random index and adds it to parameters
+					parameters.add(enumeratedParametersNondependentCopy.remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
+				}
+				
+				//dependent
+				List<List<Object>> dependentParameters = new ArrayList<List<Object>>();
+				//fills dependentParameters with random, appropriate values
+				for(int r = 0; r < dependentPotentialParametersLists.size(); r++){
+					dependentParameters.add(new ArrayList<Object>());
+					for(int c = 0; c < dependentPotentialParametersLists.get(r).size(); c++){
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(r).get(c)).toArray();
+						dependentParameters.get(r).add(possibleValues[(int)(Math.random() * possibleValues.length)]);//also may not work if generate values returns more than one object?? UPDATE - resovled??
+					}
+				}
+				
+				List<String> enumeratedParametersDependentCopy = new ArrayList<String>();
+				for(String param : enumeratedParametersDependent){
+					enumeratedParametersDependentCopy.add(param);
+				}
+				
+				for(int k = 0; k < numOfDependentToTest; k++){
+					int row = (int)(Math.random() * dependentParameters.size());
+					parameters.add(enumeratedParametersDependentCopy.get(row));
+					enumeratedParametersDependentCopy.remove(row);
+					//removes a dependent parameter at a random index and adds it to parameters
+					for(int c = 0; c < dependentParameters.get(row).size(); c++){
+						//if its an enumerated value, it will add a random enumeration
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(row).get(c)).toArray();
+						parameters.add(possibleValues[(int)(Math.random() * possibleValues.length)]);
+					}
+					dependentParameters.remove(row);
+				}
+				
+				if(enumeratedParametersDependent.size() == 0)
+					parameters.add((new StringRange()).random());
+				if(executeAndPrintResults(parameters.toArray(), false))
+					passCount++;
+				else
+					failCount++;
+				bbTests--;
 			}
 			
 		}
@@ -333,9 +382,24 @@ public class Tester {
 		//handles fixed
 		else{
 			List<Parameter> fixedParameters = this.parameterFactory.getFixedParametersList();
+			Object[] parameters = new Object[fixedParameters.size()];
 			
 			//starting tests
+			//RANDOM EVERYTHING
+			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
+				for(int k = 0; k<parameters.length; k++){
+					parameters[k] = generateValues(fixedParameters.get(k)).get(0);//wait how does this work generate values returns an arraylist
+					//what if the parameters are enumerated?
+				}
+				if(executeAndPrintResults(parameters, false))
+					passCount++;
+				else
+					failCount++;
+			}
 		}
+		double percentCovered = generateSummaryCodeCoverageResults();
+		System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+		System.out.println(HORIZONTAL_LINE);
 		
 		//System.out.println(enumeratedParameters);
 //		List<List<Parameter>> potentialParameterLists = getPotentialParameterLists();
@@ -353,7 +417,7 @@ public class Tester {
 //			//Output output = instrumentAndExecuteCode(parameters);
 //			//printBasicTestOutput(output);
 //			
-//			showCodeCoverageResultsExample();
+		showCodeCoverageResultsExample();
 //			testIteration++;
 //		//}
 
@@ -374,6 +438,11 @@ public class Tester {
 //		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
 //		Parameter potentialParameter = potentialParameters.get(0);
 		List<String> parameterStrings = new ArrayList<String>();
+		
+		//if a parameter is optional, randomly decide whether to use it or not
+		if(parameter.isOptional() && (int)(Math.random() * 2) == 1){
+			
+		}
 		//if parameter is an enumeration, the method returns the enumerated values
 		if (parameter.isEnumeration()) {//if the parameter is an enumeration, the execute security tests method should have already known this and should plan accordingly
 			List<String> enumeratedValues = parameter.getEnumerationValues();
@@ -388,10 +457,10 @@ public class Tester {
 					for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
 						if (type == Integer.class){ 
 							Range range= new IntRange();
-							formatVariableValues.add(range.random()); // dumb logic - always use '1' for an Integer
+							formatVariableValues.add(range.random()); 
 						} else if (type == String.class) {
 							Range range= new StringRange();
-							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
+							formatVariableValues.add(range.random());
 						}
 					}
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
@@ -441,13 +510,12 @@ public class Tester {
 							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
 						}
 					}
-					
 					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
 					parameterStrings.add(
 							parameter.getFormattedParameter(formatVariableValues));
 				}
 				else {
-					parameterStrings.add(range.random() + " ");		// dumb logic - always use 'one' for a String
+					parameterStrings.add(range.random()+"");		// dumb logic - always use 'one' for a String
 				}
 
 			} else {
@@ -470,16 +538,14 @@ public class Tester {
 		printBasicTestOutput(output);
 		boolean passed = false;
 		if(!errorExpected){
-			if(output.getStdErrString().length() > 0){
-				securityTestsFailCount++;
+			if(output.getStdErrString().indexOf("Exception") != -1){
 				System.out.println("security test result: FAIL");
 			} else{
-				securityTestsPassCount++;
 				System.out.println("security test result: PASS");
 				passed = true;
 			}
 		} else//if error was expected, the security test passes no matter what
-			securityTestsPassCount++;
+			passed = true;
 		//if error is unique, adds it to the errors arrayList
 		if(output.getStdErrString()!=""){
 			boolean uniqueError = true;

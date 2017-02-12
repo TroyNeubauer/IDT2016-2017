@@ -1,4 +1,5 @@
 package contest.winter2017.ohsfile;
+import static java.lang.String.format;
 
 import java.util.*;
 
@@ -113,6 +114,18 @@ public class OHSFile {
           		System.out.println("	-"+t.getOutputErr());
 		 
 	}
+	
+	//another possbile implementation that would allow for us to be able to print the yaml in tester?
+	//not sure what the %s is
+	/*public String toYAML() {
+		return new StringBuilder()
+				.append( format( "Total predefined tests run:  %s\n", passCount + failCount ) )
+	            .append( format( "Number of predefined tests that passed: %s\n", passCount ) )
+	            .append( format( "Number of predefined tests that failed: %s\n", failCount ) )
+	            .append( format( "Total code coverage percentage: %s\n", percentCoveredForBasicTests )
+	            .append( format( "Errors seen: \n",  ) )//add something
+	            .toString();
+	}*/
 	
 	
 }
