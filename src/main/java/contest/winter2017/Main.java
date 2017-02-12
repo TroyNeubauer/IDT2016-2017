@@ -125,7 +125,7 @@ public class Main {
 					System.out.println("bb" + bbTests + ", time goal " + timeGoal);
 					
 					stopAtBBTests = false;
-					timeGoal = 10 * 1000;// TODO: change
+					timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) * 1000*60;
 					Tester tester = new Tester(bbTests, timeGoal, toolChain, stopAtBBTests);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
 						
