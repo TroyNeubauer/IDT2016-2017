@@ -1,9 +1,10 @@
 package contest.winter2017;
 
+import java.io.*;
+
 import org.apache.commons.cli.*;
 
-import contest.winter2017.ohsfile.SecurityTestParameters;
-import contest.winter2017.range.*;
+import contest.winter2017.ohsfile.*;
 
 /**
  * Entry-point class for the black-box testing framework
@@ -94,36 +95,40 @@ public class Main {
 
 					// the Tester class contains all of the logic for the
 					// testing framework
-					Tester tester = new Tester();
+					int bbTests = 1000;
+					int timeGoal = 5 * 60 * 1000;// 5 minuites * 60 seconds per minuite * 1000 ms per second
+					boolean toolChain = false, stopAtBBTests = true;
+					
+					if(cliArgs.hasOption(BLACK_BOX_TESTS)){
+						if(Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS))<0){
+							System.out.println("An illegal argument was entered. Please enter a positive integer.");
+							printHelp(options);
+							return;
+						}
+						stopAtBBTests = true;
+						bbTests = Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
+					}
+					
+					if(cliArgs.hasOption(TIME_GOAL)){
+						if(Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) < 0){
+							System.out.println("An illegal argument was entered. Please enter a positive integer.");
+							printHelp(options);
+							return;
+						}
+						stopAtBBTests = false;
+						timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) * 60 * 1000;
+					}
+					if(cliArgs.hasOption(TOOL_CHAIN)){
+						toolChain = true;
+					}
+					
+					System.out.println("bb" + bbTests + ", time goal " + timeGoal);
+					
+					stopAtBBTests = false;
+					timeGoal = 10 * 1000;// TODO: change
+					Tester tester = new Tester(bbTests, timeGoal, toolChain, stopAtBBTests);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
-						int bbTests = -1;
-						int timeGoal = -1;
-						boolean toolChain = false;
 						
-						if(cliArgs.hasOption(BLACK_BOX_TESTS)){
-							if(Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS))<0){
-								System.out.println("An illegal argument was entered. Please enter a positive integer.");
-								printHelp(options);
-								return;
-							}
-							bbTests = Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
-						}
-						
-						if(cliArgs.hasOption(TIME_GOAL)){
-							if(Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) < 0){
-								System.out.println("An illegal argument was entered. Please enter a positive integer.");
-								printHelp(options);
-								return;
-							}
-								
-							timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL));
-						}
-						
-						tester.setAdditionalOptions(bbTests, timeGoal, toolChain);
-						
-						if(cliArgs.hasOption(TOOL_CHAIN)){
-							toolChain = true;
-						}
 						tester.executeBasicTests(); // this is the simple
 													// testing that we have
 													// implemented - likely no
@@ -134,6 +139,13 @@ public class Main {
 														// vulnerability testing
 														// that we want you to
 														// implement
+						
+						try {
+							OHSFileIO.write(tester.getOHSFile());
+						} catch (IOException e) {
+							System.err.println("Unable to generate results file!");
+							e.printStackTrace();
+						}
 					}
 
 					// if the user has requested help
