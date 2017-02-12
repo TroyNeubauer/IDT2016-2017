@@ -105,7 +105,6 @@ public class Main {
 							printHelp(options);
 							return;
 						}
-						stopAtBBTests = true;
 						bbTests = Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS));
 					}
 					
