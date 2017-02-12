@@ -20,18 +20,21 @@ public class DoubleRange extends NumberRange<Double> {
 		super(min, max);
 	}
 
-	@Override
-	public Double random() {
-		return Maths.randRange(getMin(), getMax());
+	public String getAppropriate() {
+		return Maths.randRange(getMin(), getMax())+"";
 	}
 	
+	public String getInappropriate(){
+		String[] inappropriateValues = {"string", "" + (getMin() - 1), "" + (getMax() + 1)};
+		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
+	}
 	
 	/**
-	 * returns an array of typical edge cases for a double
+	 * returns a typical edge cases for a double
 	 */
-	public Double[] generalEdgeCases(){
-		Double[] output = {0.0, -50.0, Double.MAX_VALUE, Double.MIN_VALUE};
-		return output;
+	public String getGeneralEdgeCase(){
+		Double[] edges = {0.0, -50.0, Double.MAX_VALUE, Double.MIN_VALUE};
+		return edges[(int)(Math.random() * edges.length)] + "";
 	}
 	
 	public void setMin(Double newMin){

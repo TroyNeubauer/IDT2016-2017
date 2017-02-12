@@ -114,17 +114,15 @@ public class Main {
 							printHelp(options);
 							return;
 						}
-						stopAtBBTests = false;
+						//if a time goal is specified but the number of black box tests is not
+						if(!cliArgs.hasOption(BLACK_BOX_TESTS))
+							stopAtBBTests = false;
 						timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) * 60 * 1000;
 					}
 					if(cliArgs.hasOption(TOOL_CHAIN)){
 						toolChain = true;
 					}
-					
-					System.out.println("bb" + bbTests + ", time goal " + timeGoal);
-					
-					stopAtBBTests = false;
-					timeGoal = Integer.parseInt(cliArgs.getOptionValue(TIME_GOAL)) * 1000*60;
+
 					Tester tester = new Tester(bbTests, timeGoal, toolChain, stopAtBBTests);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
 						

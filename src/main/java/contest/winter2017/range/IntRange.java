@@ -21,16 +21,21 @@ public class IntRange extends NumberRange<Integer> {
 	}
 
 	@Override
-	public Integer random() {
-		return Maths.randRange(getMin(), getMax());
+	public String getAppropriate() {
+		return Maths.randRange(getMin(), getMax()) + "";
+	}
+	
+	public String getInappropriate(){
+		String[] inappropriateValues = {50.0 + "", "string", "" + (getMin() - 1), "" + (getMax() + 1)};
+		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	
 	/**
-	 * returns an array of typical edge cases for an integer
+	 * returns a of typical edge cases for an integer
 	 */
-	public Integer[] generalEdgeCases(){
-		Integer[] output = {0, -50, Integer.MAX_VALUE, Integer.MIN_VALUE};
-		return output;
+	public String getGeneralEdgeCase(){
+		Integer[] edges = {0, -50, Integer.MAX_VALUE, Integer.MIN_VALUE};
+		return edges[(int)(Math.random() * edges.length)] + "";
 	}
 	
 	public void setMin(Integer newMin){

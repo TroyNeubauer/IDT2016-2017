@@ -42,7 +42,7 @@ public class StringRange extends Range<String> {
 	}
 
 	@Override
-	public String random() {
+	public String getAppropriate(){
 		int length = Maths.randRange(minLength, maxLength);
 		String result = new String();
 		
@@ -52,12 +52,17 @@ public class StringRange extends Range<String> {
 		return result;
 	}
 	
+	public String getInappropriate(){
+		String[] inappropriateValues = {"", "\"      \""};
+		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
+	}
+	
 	/**
-	 * returns an array of typical string edge cases
+	 * returns typical string edge case
 	 */
-	public String[] generalEdgeCases(){
-		String[] output = {""};
-		return output;
+	public String getGeneralEdgeCase(){
+		String[] edges = {"", "\"         \"", ",~`"};
+		return edges[(int)(Math.random() * edges.length)];
 	}
 	
 	

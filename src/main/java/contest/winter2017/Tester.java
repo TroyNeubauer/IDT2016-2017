@@ -69,19 +69,19 @@ public class Tester {
 	/**
 	 * bbTests is the number of black box tests to execute
 	 */
-	private final int bbTests;
+	private final int BBTESTS;
 
 	/**
 	 * timeGoal is the amount time in milliseconds that we have to match
 	 */
-	private final long timeGoal;
+	private final long TIMEGOAL;
 	
 	/**
 	 * if true, only the YAML report is in the output
 	 */
-	private final boolean toolChain;
+	private final boolean TOOLCHAIN;
 	
-	private final boolean stopAtBBTests;
+	private final boolean STOPATBBTESTS;
 	
 	private final OHSFile outputFile;
 	
@@ -94,10 +94,10 @@ public class Tester {
 	public Tester(int bbTests, int timeGoal, boolean toolChain, boolean stopAtBBTests) {
 		this.outputFile = new OHSFile();
 		outputFile.setTimestamp(System.currentTimeMillis());
-		this.bbTests = bbTests;
-		this.timeGoal = timeGoal; // If user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
-		this.toolChain = toolChain;
-		this.stopAtBBTests = stopAtBBTests;
+		this.BBTESTS = bbTests;
+		this.TIMEGOAL = timeGoal; // If user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
+		this.TOOLCHAIN = toolChain;
+		this.STOPATBBTESTS = stopAtBBTests;
 	
 	}
 		
@@ -164,7 +164,8 @@ public class Tester {
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-			System.out.println("CLASS: " + mainClassTestBoundsName);
+			if(!TOOLCHAIN)
+				System.out.println("CLASS: " + mainClassTestBoundsName);
 			// use reflection to invoke the TestBounds class to get the usage information from the jar
 			Method testBoundsMethod = null;
 			testBoundsMethod = mainClassTestBounds.getMethod("testBounds");
@@ -221,48 +222,90 @@ public class Tester {
 				result += o.toString();
 			}
 			outputFile.addBasicTest(new BasicTest(result, output.getStdOutString(), output.getStdErrString(), test.getStdOutExpectedResultRegex(), test.getStdErrExpectedResultRegex()));
-			printBasicTestOutput(output);
+			if(!TOOLCHAIN)
+				printBasicTestOutput(output);
 			
 			// determine the result of the test based on expected output/error regex
 			if(output.getStdOutString().matches(test.getStdOutExpectedResultRegex())
 					&& output.getStdErrString().matches(test.getStdErrExpectedResultRegex())) {
-				System.out.println("basic test result: PASS");
+				if(!TOOLCHAIN)
+					System.out.println("basic test result: PASS");
 				passCount++;
 			}
 			else {
-				System.out.println("basic test result: FAIL ");
+				if(!TOOLCHAIN)
+					System.out.println("basic test result: FAIL ");
 				failCount++;
 				
 				// since we have a failed basic test, show the expectation for the stdout
 				if(!output.getStdOutString().matches(test.getStdOutExpectedResultRegex())) {
-					System.out.println("\t ->stdout: "+output.getStdOutString());
-					System.out.println("\t ->did not match expected stdout regex: "+test.getStdOutExpectedResultRegex());
+					if(!TOOLCHAIN){
+						System.out.println("\t ->stdout: "+output.getStdOutString());
+						System.out.println("\t ->did not match expected stdout regex: "+test.getStdOutExpectedResultRegex());
+					}
 				}
 				
 				// since we have a failed basic test, show the expectation for the stderr
 				if(!output.getStdErrString().matches(test.getStdErrExpectedResultRegex())) {
-					System.out.println("\t ->stderr: "+output.getStdErrString());
-					System.out.println("\t ->did not match expected stderr regex: "+test.getStdErrExpectedResultRegex());
-					
+					if(!TOOLCHAIN){
+						System.out.println("\t ->stderr: "+output.getStdErrString());
+						System.out.println("\t ->did not match expected stderr regex: "+test.getStdErrExpectedResultRegex());
+					}
 				}
 			}
-			System.out.println(HORIZONTAL_LINE);
+			if(!TOOLCHAIN)
+				System.out.println(HORIZONTAL_LINE);
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
 		outputFile.setPercentCoveredForBasicTests((float)percentCovered);
-		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
-		System.out.println(HORIZONTAL_LINE);
+		if(!TOOLCHAIN){
+			System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+			System.out.println(HORIZONTAL_LINE);
+		}
 	}
 	
 	
 	public void executeSecurityTests() {
-		System.out.println();
-		System.out.println("Starting security tests");
+		if(!TOOLCHAIN){
+			System.out.println();
+			System.out.println("Starting security tests");
+		}
 		int passCount = 0;
 		int failCount = 0;
-		long timeToEnd;
+		long startTime = System.currentTimeMillis();
+		long timeToEnd = startTime + TIMEGOAL;
 		int testCount = 0;
+		
+		/*There are five stages in our black box testing method for unbounded jars.
+		 * Stage 1: 5% of the specified number of tests will test the typical edge cases of the parameter types one argument at a time (i.e. for an integer, an edge case may be a negative number)
+		 * Stage 2: 5% will test typical edge cases of the parameter types with multiple arguments at a time
+		 * Stage 3: 10% of the tests will test the security tests with inappropriate values in attempt to reach the jar's catch statements
+		 * Stage 4: 40% of the tests will test one argument at a time with an appropriate parameters entered
+		 * Stage 5: the rest of the tests will test multiple arguments with appropriate parameters entered
+		 */
+		
+		/*For bounded jars there are three stages.
+		 * Stage 1: 5% of the specified number of tests will test the typical edge cases of the parameter types (i.e. for an integer, an edge case may be a negative number)
+		 * Stage 2: 10% of the tests will test the security tests with inappropriate values in attempt to reach the jar's catch statements
+		 * Stage 3: the rest of the tests will test multiple arguments with appropriate parameters entered
+		 */
+		
+		/*If the user specified the number of tests but not a time goal or didn't specify a time goal 
+		 * or number of tests, the stages will be split based on the number of tests specified or the
+		 * default number of tests to be executed (1000). If the user specified a time goal but did not specify
+		 * a number of tests, the stages will be split based on the time.
+		 */
+		long stageComparer;
+		if(STOPATBBTESTS)
+			stageComparer = BBTESTS;
+		else
+			stageComparer = (int)(TIMEGOAL);//total time
+		long s1End = (long) (stageComparer * .05);
+		long s2End = (long) (stageComparer * .05 + s1End);
+		long s3End = (long) (stageComparer * .1 + s2End);
+		long s4End = (long) (stageComparer * .4 + s3End);//only used for unbounded jars
+		
 		
 		//each row represents a different parameter
 		//each row holds a parameter we need to test in the first index, values in the subsequent indexes
@@ -275,7 +318,8 @@ public class Tester {
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
 			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
-			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0));//formats them as well
+			List<String> enumeratedParametersNondependent = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "appropriate");
+					//generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "appropriate");//formats them as well
 			//corresponds to the rows of dependentPotentialParameterLists
 			List<String> enumeratedParametersDependent = new ArrayList<String>();
 			
@@ -297,7 +341,7 @@ public class Tester {
 					while(!potentialParameters.isEmpty()){//make a dummy previous parameter strings using the generate values method?
 						//check if its an enumeration. if it is, get the list of enumerations and you can start testing that
 						
-						dummyPrevParamString.add(generateValues(potentialParameters.get(potentialParameters.size()-1)).get(0));
+						dummyPrevParamString.add(generateValues(potentialParameters.get(potentialParameters.size()-1), "appropriate").get(0));
 						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
 						if(!potentialParameters.isEmpty())
 							dependentPotentialParametersLists.get(0).add(potentialParameters.get(0));
@@ -306,40 +350,86 @@ public class Tester {
 				}
 			}
 			
+//			Parameter stupid = this.parameterFactory.getNext(new ArrayList<String>()).get(0);
+//			System.out.println("TEST");
+//			System.out.println(generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "appropriate"));
+//			System.out.println(generateValues(stupid, "edge"));
+			
 			//just stuff to make sure everything works -- delete later
-			System.out.println("nondependent enums: " + enumeratedParametersNondependent);
-			for(int k = 0; k < dependentPotentialParametersLists.size(); k++){
-				System.out.println("type: " + dependentPotentialParametersLists.get(k).get(0).getType());
-				System.out.println("enum: " + enumeratedParametersDependent.get(k));
-				System.out.println("dependentPotentialParameters: " + dependentPotentialParametersLists.get(k));
-			}
+//			System.out.println("nondependent enums: " + enumeratedParametersNondependent);
+//			for(int k = 0; k < dependentPotentialParametersLists.size(); k++){
+//				System.out.println("type: " + dependentPotentialParametersLists.get(k).get(0).getType());
+//				System.out.println("enum: " + enumeratedParametersDependent.get(k));
+//				System.out.println("dependentPotentialParameters: " + dependentPotentialParametersLists.get(k));
+//			}
 			
 			
-			/*There are five stages in our black box testing method.
-			 * Stage 1: 1/10th of the tests will test the typical edge cases of the parameter types one parameter at a time (i.e. for an integer, an edge case may be a negative number)
-			 * Stage 2: 1/10th of the tests 
-			 */
+			
+			//Parameter nondependentParam = this.parameterFactory.getNext(new ArrayList<String>()).get(0);
+			
 			
 			//RANDOM EVERYTHING
 			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
 			//while there are still more bbTests to run or there is extra time, tests will continue to be performed
-			timeToEnd = System.currentTimeMillis() + timeGoal;
-			while(stopAtBBTests ? (testCount < bbTests): (System.currentTimeMillis() < timeToEnd)) {
-				System.out.println("doin stuff!!! " + System.currentTimeMillis() + ", " + timeToEnd);
-				testCount++;
+			
+			while(STOPATBBTESTS ? (testCount < BBTESTS): (System.currentTimeMillis() < timeToEnd)) {
+				
 				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
 				
 				//makes deep copy so we can remove values from them later to test and not repeat any of them
-				List<String> enumeratedParametersNondependentCopy = new ArrayList<String>();
-				for(String param : enumeratedParametersNondependent){
-					enumeratedParametersNondependentCopy.add(param);
+				List<String> enumeratedParametersNondependentCopy = makeDeepCopy(enumeratedParametersNondependent);
+//				System.out.println(enumeratedParametersNondependent + " enumnondependent1");
+//				List<String> enumeratedParametersNondependentCopy = new ArrayList<String>();
+//				for(String param : enumeratedParametersNondependent){
+//					enumeratedParametersNondependentCopy.add(param);
+//				}
+				
+				int numOfNondependentToTest;
+				int numOfDependentToTest;
+				//at stage 1 and stage 4, we test 1 argument at a time
+				if((STOPATBBTESTS && (testCount < s1End || testCount > s3End && testCount < s4End)) ||
+						(!STOPATBBTESTS && (startTime + s1End > System.currentTimeMillis()) || 
+						(startTime + s3End > System.currentTimeMillis()) && (startTime + s4End > System.currentTimeMillis()))){
+					//sometimes test a dependent arg, sometimes test a nondependent arg
+					if((int)(Math.random() * 2) == 0){
+						numOfNondependentToTest = 1;
+						numOfDependentToTest = 0;
+					}
+					else{
+						numOfNondependentToTest = 0;
+						numOfDependentToTest = 1;
+					}
+				}
+				else{
+					numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
+					numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
 				}
 				
-				//nondependent
+				String paramTestType;
+				if(STOPATBBTESTS && s2End > testCount ||
+						!STOPATBBTESTS && startTime + s2End > System.currentTimeMillis()){
+					paramTestType = "edge";
+					//enumeratedParametersNondependentCopy = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "edge");
+				}
+				else if(STOPATBBTESTS && s3End > testCount ||
+						!STOPATBBTESTS && startTime + s3End > System.currentTimeMillis()){
+					paramTestType = "inappropriate";
+					//enumeratedParametersNondependentCopy = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "innapropriate");
+				}
+				else{
+					paramTestType = "appropriate";
+					//enumeratedParametersNondependentCopy = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0), "appropriate");
+				}
+				//TODO: replace patterns here
+				//why is it not a deep copy
+				////enumeratedParametersNondependentCopy = generateValues(this.parameterFactory.getNext(new ArrayList<String>()).get(0),paramTestType);
+				//this wouldn't even work because it would return all of the enumerated parameters
+				
+				
+				
 				List<Object> parameters = new ArrayList<Object>();
-				int numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
-				int numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
-				for(int k = 0; k < numOfNondependentToTest; k++){
+				//nondependent
+				for(int k = 0; k < numOfNondependentToTest && enumeratedParametersNondependent.size() !=0; k++){
 					//removes a nondependent parameter at a random index and adds it to parameters
 					parameters.add(enumeratedParametersNondependentCopy.remove((int)(Math.random() * enumeratedParametersNondependentCopy.size())));
 				}
@@ -350,196 +440,227 @@ public class Tester {
 				for(int r = 0; r < dependentPotentialParametersLists.size(); r++){
 					dependentParameters.add(new ArrayList<Object>());
 					for(int c = 0; c < dependentPotentialParametersLists.get(r).size(); c++){
-						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(r).get(c)).toArray();
-						dependentParameters.get(r).add(possibleValues[(int)(Math.random() * possibleValues.length)]);//also may not work if generate values returns more than one object?? UPDATE - resovled??
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(r).get(c), paramTestType).toArray();
+					      dependentParameters.get(r).add(possibleValues[(int)(Math.random() * possibleValues.length)]);
 					}
 				}
 				
-				List<String> enumeratedParametersDependentCopy = new ArrayList<String>();
-				for(String param : enumeratedParametersDependent){
-					enumeratedParametersDependentCopy.add(param);
-				}
+				List<String> enumeratedParametersDependentCopy = makeDeepCopy(enumeratedParametersDependent);
+//				List<String> enumeratedParametersDependentCopy = new ArrayList<String>();
+//				for(String param : enumeratedParametersDependent){
+//					enumeratedParametersDependentCopy.add(param);
+//				}
 				
-				for(int k = 0; k < numOfDependentToTest; k++){
+				for(int k = 0; k < numOfDependentToTest && dependentParameters.size() !=0; k++){
 					int row = (int)(Math.random() * dependentParameters.size());
 					parameters.add(enumeratedParametersDependentCopy.get(row));
 					enumeratedParametersDependentCopy.remove(row);
 					//removes a dependent parameter at a random index and adds it to parameters
 					for(int c = 0; c < dependentParameters.get(row).size(); c++){
 						//if its an enumerated value, it will add a random enumeration
-						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(row).get(c)).toArray();
-						parameters.add(possibleValues[(int)(Math.random() * possibleValues.length)]);
+						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(row).get(c), paramTestType).toArray();
+					    parameters.add(possibleValues[(int)(Math.random() * possibleValues.length)]);
 					}
 					dependentParameters.remove(row);
 				}
 				
 				if(enumeratedParametersDependent.size() == 0)
-					parameters.add((new StringRange()).random());
-				if(executeAndPrintResults(parameters.toArray(), false))
+					parameters.add((new StringRange()).random(paramTestType));
+				if(executeAndPrintResults(parameters.toArray(), paramTestType))
 					passCount++;
 				else
 					failCount++;
+				testCount++;
+//				System.out.println("param Testtype " + paramTestType);
+//				System.out.println(enumeratedParametersNondependent.hashCode() + " enumnondependent");
+//				System.out.println("copy " +enumeratedParametersNondependentCopy.hashCode() + " asdf");
 			}
 			
 		}
 		
 		//handles fixed
 		else{
+			
+			String paramTestType;
+			if(s2End < testCount){
+				paramTestType = "edge";
+			}
+			else if(s3End < testCount){
+				paramTestType = "inappropriate";
+			}
+			else{
+				paramTestType = "appropriate";
+			}
 			List<Parameter> fixedParameters = this.parameterFactory.getFixedParametersList();
 			Object[] parameters = new Object[fixedParameters.size()];
 			
 			//starting tests
 			//RANDOM EVERYTHING
-			timeToEnd = System.currentTimeMillis() + timeGoal;
-			while(stopAtBBTests ? (testCount < bbTests) : (System.currentTimeMillis() < timeToEnd)){
+			while(STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)){
 				testCount++;
-				for(int k = 0; k<parameters.length; k++){
-					parameters[k] = generateValues(fixedParameters.get(k)).get(0);//wait how does this work generate values returns an arraylist
+				for(int k = 0; k<parameters.length; k++){//fix/clean
+					parameters[k] = generateValues(fixedParameters.get(k), paramTestType).get((int)(Math.random()*generateValues(fixedParameters.get(k), paramTestType).size()));//wait how does this work generate values returns an arraylist
 					//what if the parameters are enumerated?
 				}
-				if(executeAndPrintResults(parameters, false))
+				if(executeAndPrintResults(parameters, paramTestType))
 					passCount++;
 				else
 					failCount++;
 			}
 		}
 		double percentCovered = generateSummaryCodeCoverageResults();
-		System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
-		System.out.println(HORIZONTAL_LINE);
+		if(!TOOLCHAIN){
+			System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+			System.out.println(HORIZONTAL_LINE);
+		}
 		
-		//System.out.println(enumeratedParameters);
-//		List<List<Parameter>> potentialParameterLists = getPotentialParameterLists();
-//		System.out.println(potentialParameterLists);
-//		//ends when reaches time limit
-//		//while(System.currentTimeMillis() < timeToEnd) {
-//			//Object[] parameters = new Object[10];//dummy
-//			
-//			//generates values where no errors are expected and instruments and executes
-//			//generateExpectedPassValues();
-//			
-//			//generates values an error message is expected
-//			//generateExpectedFailValues();
-//			
-//			//Output output = instrumentAndExecuteCode(parameters);
-//			//printBasicTestOutput(output);
-//			
-		showCodeCoverageResultsExample();
-//			testIteration++;
-//		//}
+		//YAML output
+		System.out.println("Total predefined tests run: " + testCount);
+		System.out.println("Number of predefined tests that passed: " + passCount);
+		System.out.println("Number of predefined tests that failed: " + failCount);
+		System.out.println("Total code coverage percentage: " + percentCovered);
+		System.out.println("Unique error count: " + errors.size());
+		System.out.println("Errors seen:");
+		for(String err: errors)
+			System.out.println("\t-" + err);
+		//showCodeCoverageResultsExample();
+
 
 		
 	}
 	
+	public List<String> makeDeepCopy(List<String> toCopy){
+		List<String> copy = new ArrayList<String>();
+		for(String param : toCopy){
+			copy.add(param);
+		}
+		return copy;
+	}
+	
+	
+	
 	/**
 	 * Method will return an List of values that corresponds to the type and passed into the method.
 	 * 
-	 * @param parameter is the parameter that different values will be generated from
+	 * @param parameter is the parameter that the value(s) will be generated from.
+	 * @param testParamType is the type of value that should be generated. type will have the value of either
+	 * "edge" for edge cases, "inappropriate" for a value that is not of the same type of the parameter's type,
+	 * or "appropriate" for a value that is the same type of the parameter's type.
 	 * 
-	 * @returns a list containing one value of the type of the parameter that is passed into the
-	 * method. If the parameter is enumerated, it returns a list of enumerated values
+	 * @returns a list containing one value to be executed as a parameter.
+	 * If the parameter is enumerated, it returns a list of enumerated values
 	 */
-	public List<String> generateValues(Parameter parameter){
-		//make a range object later?
-//		List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
-//		List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
-//		Parameter potentialParameter = potentialParameters.get(0);
-		List<String> parameterStrings = new ArrayList<String>();
-		
-		//if a parameter is optional, randomly decide whether to use it or not
-		if(parameter.isOptional() && (int)(Math.random() * 2) == 1){
-			
-		}
-		//if parameter is an enumeration, the method returns the enumerated values
-		if (parameter.isEnumeration()) {//if the parameter is an enumeration, the execute security tests method should have already known this and should plan accordingly
-			List<String> enumeratedValues = parameter.getEnumerationValues();
-//			parameterStrings = parameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
-			
-			//if any enumerated values are formatted, the appropriate values are replaced
-			for(int k = 0; k < enumeratedValues.size(); k++){
-				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(parameter.isFormatted()) {//should this go above the forloop?]
-					// loop over the areas of the format that must be replaced and choose values
-					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
-						if (type == Integer.class){ 
-							Range range= new IntRange();
-							formatVariableValues.add(range.random()); 
-						} else if (type == String.class) {
-							Range range= new StringRange();
-							formatVariableValues.add(range.random());
-						}
-					}
-					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					enumeratedValues.set(k,
-							parameter.getFormattedParameter(
-									enumeratedValues.get(k), formatVariableValues));
-					/*parameterString =
-							parameter.getFormattedParameter(
-									parameterString, formatVariableValues);*/
-				}
-				//previousParameterStrings.add(parameterString);
-			}
-			return enumeratedValues;
-		// if it is not an enumeration parameter, it is either an Integer, Double, or String
-		} else {
-			if (parameter.getType() == Integer.class){ 
-				IntRange range= new IntRange();
-				if(parameter.getMax() != null){
-					range.setMax((Integer)parameter.getMax());
-				}
-				if(parameter.getMin() != null){
-					range.setMin((Integer)parameter.getMin());
-				}
-				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1' for an Integer
-			} else if (parameter.getType() == Double.class) {//all the if statements may not be necessary
-				DoubleRange range= new DoubleRange();
-				if(parameter.getMax() != null){
-					range.setMax((Double)parameter.getMax());
-				}
-				if(parameter.getMin() != null){
-					range.setMin((Double)parameter.getMin());
-				}
-				parameterStrings.add(range.random() + " ");	// dumb logic - always use '1.0' for a Double*/
-			} else if (parameter.getType() == String.class) {
-				Range range = new StringRange();
+	public List<String> generateValues(Parameter parameter, String paramTestType){
+	      //make a range object later?
+//	    List<String> previousParameterStrings = new ArrayList<String>(); // start with a blank parameter list since we are going to start with the first parameter
+//	    List<Parameter> potentialParameters = this.parameterFactory.getNext(previousParameterStrings);
+//	    Parameter potentialParameter = potentialParameters.get(0);
+	      List<String> parameterStrings = new ArrayList<String>();
+	      
+	      //if a parameter is optional, randomly decide whether to use it or not
+	      if(parameter.isOptional() && (int)(Math.random() * 2) == 1){
+	         parameterStrings.add("");
+	         return parameterStrings;
+	      }
+	      //if parameter is an enumeration, the method returns the enumerated values
+	      if (parameter.isEnumeration()) {//if the parameter is an enumeration, the execute security tests method should have already known this and should plan accordingly
+	         List<String> enumeratedValues = parameter.getEnumerationValues();
+//	       parameterStrings = parameter.getEnumerationValues().get(0) + " "; // dumb logic - given a list of options, always use the first one
+	         
+	         //if any enumerated values are formatted, the appropriate values are replaced
+	         for(int k = 0; k < enumeratedValues.size(); k++){
+	            // if the parameter has internal format (eg. "<number>:<number>PM EST")
+	            if(parameter.isFormatted()) {
+	               // loop over the areas of the format that must be replaced and choose values
+	               List<Object> formatVariableValues = new ArrayList<Object>();
+	               for(Class type :parameter.getFormatVariables(enumeratedValues.get(k))) {
+	                  if (type == Integer.class){ 
+	                     Range range= new IntRange();
+	                     formatVariableValues.add(range.random(paramTestType)); 
+	                  } else if (type == String.class) {
+	                     Range range= new StringRange();
+	                     formatVariableValues.add(range.random(paramTestType));
+	                  }
+	               }
+	               //build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+	               enumeratedValues.set(k,
+	                     parameter.getFormattedParameter(
+	                           enumeratedValues.get(k), formatVariableValues));
+	               
+	               
+	               /*parameterString =
+	                     parameter.getFormattedParameter(
+	                           parameterString, formatVariableValues);*/
+	            }
+	          //TODO: reset valuesin parameter so its the replace me shit again??
+	            
+	            //previousParameterStrings.add(parameterString);
+	         }
+	         return enumeratedValues;
+	      // if it is not an enumeration parameter, it is either an Integer, Double, or String
+	      } else {
+	         if (parameter.getType() == Integer.class){ 
+	            IntRange range= new IntRange();
+	            if(parameter.getMax() != null){
+	               range.setMax((Integer)parameter.getMax());
+	            }
+	            if(parameter.getMin() != null){
+	               range.setMin((Integer)parameter.getMin());
+	            }
+	            parameterStrings.add(range.random(paramTestType) + " ");    // dumb logic - always use '1' for an Integer
+	         } else if (parameter.getType() == Double.class) {//all the if statements may not be necessary
+	            DoubleRange range= new DoubleRange();
+	            if(parameter.getMax() != null){
+	               range.setMax((Double)parameter.getMax());
+	            }
+	            if(parameter.getMin() != null){
+	               range.setMin((Double)parameter.getMin());
+	            }
+	            parameterStrings.add(range.random(paramTestType) + " ");    // dumb logic - always use '1.0' for a Double*/
+	         } else if (parameter.getType() == String.class) {
+	            Range range = new StringRange();
 
-				// if the parameter has internal format (eg. "<number>:<number>PM EST")
-				if(parameter.isFormatted()) {
+	            // if the parameter has internal format (eg. "<number>:<number>PM EST")
+	            if(parameter.isFormatted()) {
 
-					// loop over the areas of the format that must be replaced and choose values
-					List<Object> formatVariableValues = new ArrayList<Object>();
-					for(Class type : parameter.getFormatVariables()) {
-						if (type == Integer.class){ 
-							Range intRange= new IntRange();
-							formatVariableValues.add(intRange.random()); // dumb logic - always use '1' for an Integer
-						} else if (type == String.class) {
-							formatVariableValues.add(range.random()); // dumb logic - always use 'one' for a String
-						}
-					}
-					//build the formatted parameter string with the chosen values (eg. 1:1PM EST)
-					parameterStrings.add(
-							parameter.getFormattedParameter(formatVariableValues));
-				}
-				else {
-					parameterStrings.add(range.random()+"");		// dumb logic - always use 'one' for a String
-				}
+	               // loop over the areas of the format that must be replaced and choose values
+	               List<Object> formatVariableValues = new ArrayList<Object>();
+	               for(Class type : parameter.getFormatVariables()) {
+	                  if (type == Integer.class){ 
+	                     Range intRange= new IntRange();
+	                     formatVariableValues.add(intRange.random(paramTestType)); // dumb logic - always use '1' for an Integer
+	                  } else if (type == String.class) {
+	                     formatVariableValues.add(range.random(paramTestType)); // dumb logic - always use 'one' for a String
+	                  }
+	               }
+	               //build the formatted parameter string with the chosen values (eg. 1:1PM EST)
+	               parameterStrings.add(
+	                     parameter.getFormattedParameter(formatVariableValues));
+	            }
+	            else {
+	               parameterStrings.add(range.random(paramTestType)+"");      // dumb logic - always use 'one' for a String
+	            }
 
-			} else {
-				parameterStrings.add("unknown type");//should we do something about this
-			}
-		}
-		return parameterStrings;
-	}
+	         } else {
+	            parameterStrings.add("unknown type");//should we do something about this
+	         }
+	      }
+	      return parameterStrings;
+	   }
+	
 	
 	/**
 	 * Method will execute an individual security test and print its results.
 	 * 
 	 * @param toTest is the array of parameters to be passed into the instrumentAndExecuteCode method
-	 * @param errorExpected is true if the individual security test is expected to have an error, false if not
+	 * @param paramTestType is a String that represents whether the values generated for the security test
+	 * were appropriate or an edge case, meaning they should not have an exception, or inappropriate, meaning
+	 * that an exception was expected to be generated.
 	 * 
-	 * @return true if the security test passed, false if not
+	 * @return true if the security test passed, false if not. A security test passes if no exceptions occur
+	 * or if an exception was expected and generated
 	 */
-	public boolean executeAndPrintResults(Object[] toTest, boolean errorExpected) {
+	public boolean executeAndPrintResults(Object[] toTest, String paramTestType) {
 		Output output = instrumentAndExecuteCode(toTest);
 		String result = new String();
 		for(Object o : toTest) {
@@ -547,29 +668,42 @@ public class Tester {
 		}
 		float covered = (float) generateSummaryCodeCoverageResults();
 		outputFile.addSecurityTest(new SecurityTest(result, output.getStdOutString(), output.getStdErrString(), covered));
-		printBasicTestOutput(output);
+		if(!TOOLCHAIN)
+			printBasicTestOutput(output);
 		boolean passed = false;
-		if(!errorExpected) {
+		if(paramTestType.equals("appropriate") || paramTestType.equals("edge")) {
 			if(output.getStdErrString().indexOf("Exception") != -1){
-				System.out.println("security test result: FAIL");
 			} else{
-				System.out.println("security test result: PASS");
 				passed = true;
 			}
-		} else//if error was expected, the security test passes no matter what
+		} else{//if error was expected, the security test passes no matter what
 			passed = true;
+		}
 		//if error is unique, adds it to the errors arrayList
-		if(output.getStdErrString()!=""){
+		if(!output.getStdErrString().equals("")){
 			boolean uniqueError = true;
 			for(int k = 0; k < errors.size(); k++){
-				if(output.getStdErrString().equals(errors.get(k)))
+				if(output.getStdErrString().equals(errors.get(k))){
 					uniqueError = false;
+					break;
+				}
 			}
 			if(uniqueError)
 				errors.add(output.getStdErrString());
 		}
-		System.out.println(HORIZONTAL_LINE);
+		if(!TOOLCHAIN){//should this stuff be printed in the exec.sec test method?
+			System.out.println("security test result: ");
+			if(passed)
+				System.out.println("PASSED");
+			else
+				System.out.println("FAILED");
+			System.out.println(HORIZONTAL_LINE);
+		}
 		return passed;
+	}
+	
+	public OHSFile getOHSFile() {
+		return outputFile;
 	}
 	
 	
@@ -605,7 +739,8 @@ public class Tester {
 			}
 			
 			// show the user the command to run and prepare the process using the command
-			System.out.println("command to run: "+command);
+			if(!TOOLCHAIN)
+				System.out.println("command to run: "+command);
 			process = Runtime.getRuntime().exec(command);
 		
 			// prepare the stream needed to capture standard output
@@ -889,9 +1024,7 @@ public class Tester {
 		System.out.println(generateDetailedCodeCoverageResults());
 	}
 
-	public OHSFile getOHSFile() {
-		return outputFile;
-	}
+
 	
 	
 }
