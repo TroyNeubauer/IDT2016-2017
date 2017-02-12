@@ -384,8 +384,8 @@ public class Tester {
 //					enumeratedParametersNondependentCopy.add(param);
 //				}
 				
-				int numOfNondependentToTest;
-				int numOfDependentToTest;
+				int numOfNondependentToTest = 0;
+				int numOfDependentToTest = 0;
 				//at stage 1 and stage 4, we test 1 argument at a time
 				if((STOPATBBTESTS && (testCount < s1End || testCount > s3End && testCount < s4End)) ||
 						(!STOPATBBTESTS && (startTime + s1End > System.currentTimeMillis()) || 
@@ -393,16 +393,16 @@ public class Tester {
 					//sometimes test a dependent arg, sometimes test a nondependent arg
 					if((int)(Math.random() * 2) == 0){
 						numOfNondependentToTest = 1;
-						numOfDependentToTest = 0;
 					}
 					else{
-						numOfNondependentToTest = 0;
 						numOfDependentToTest = 1;
 					}
 				}
 				else{
-					numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
-					numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
+					while(numOfNondependentToTest == 0 && numOfDependentToTest ==0){
+						numOfNondependentToTest = (int)(Math.random() * enumeratedParametersNondependent.size());
+						numOfDependentToTest = (int)(Math.random() * dependentPotentialParametersLists.size());
+					}
 				}
 				
 				String paramTestType;
@@ -454,13 +454,13 @@ public class Tester {
 				for(int k = 0; k < numOfDependentToTest && dependentParameters.size() !=0; k++){
 					int row = (int)(Math.random() * dependentParameters.size());
 					parameters.add(enumeratedParametersDependentCopy.get(row));
-					enumeratedParametersDependentCopy.remove(row);
 					//removes a dependent parameter at a random index and adds it to parameters
-					for(int c = 0; c < dependentParameters.get(row).size(); c++){
+					for(int c = 0; c < dependentPotentialParametersLists.get(row).size(); c++){
 						//if its an enumerated value, it will add a random enumeration
 						Object[] possibleValues = generateValues(dependentPotentialParametersLists.get(row).get(c), paramTestType).toArray();
 					    parameters.add(possibleValues[(int)(Math.random() * possibleValues.length)]);
 					}
+					enumeratedParametersDependentCopy.remove(row);
 					dependentParameters.remove(row);
 				}
 				
@@ -673,6 +673,8 @@ public class Tester {
 		boolean passed = false;
 		if(paramTestType.equals("appropriate") || paramTestType.equals("edge")) {
 			if(output.getStdErrString().indexOf("Exception") != -1){
+			//(output.getStdErrString().length() > 0){//if there was an error when we weren't expecting one
+				passed= false;
 			} else{
 				passed = true;
 			}
