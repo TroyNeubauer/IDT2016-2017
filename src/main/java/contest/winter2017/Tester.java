@@ -23,6 +23,7 @@ import contest.winter2017.range.*;
  * 
  * @author IDT
  */
+@SuppressWarnings("all")
 public class Tester {
 	
 	

@@ -11,6 +11,7 @@ import contest.winter2017.ohsfile.*;
  * 
  * @author IDT
  */
+@SuppressWarnings("all")
 public class Main {
 
 	/**
