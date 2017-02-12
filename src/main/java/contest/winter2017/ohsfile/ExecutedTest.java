@@ -26,4 +26,11 @@ public abstract class ExecutedTest {
 		return outputErr;
 	}
 
+	@Override
+	public String toString() {
+		return "ExecutedTest [argsUsed=" + argsUsed + ", outputOut=" + outputOut + ", outputErr=" + outputErr + "]";
+	}
+	
+	
+
 }

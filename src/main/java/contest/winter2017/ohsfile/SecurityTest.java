@@ -17,6 +17,11 @@ public class SecurityTest extends ExecutedTest {
 	public float getPercentCovered() {
 		return percentCovered;
 	}
+
+	@Override
+	public String toString() {
+		return "SecurityTest [argsUsed=" + getArgsUsed() + ", outputOut=" + getOutputOut() + ", outputErr=" + getOutputErr() + "percentCovered=" + percentCovered + "]";
+	}
 	
 	
 

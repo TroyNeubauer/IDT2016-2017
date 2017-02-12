@@ -1,5 +1,4 @@
 package contest.winter2017.ohsfile;
-import static java.lang.String.format;
 
 import java.util.*;
 
@@ -10,39 +9,42 @@ import java.util.*;
  *
  */
 public class OHSFile {
-	
-	private int version;
+
+	private short version;
 	private long timestamp;
-	private int securityTestOffset;
 	private byte[] hashOfJarFile = new byte[16];
 	private int passCount, failCount;
-	private double percentCoveredForBasicTests;
-	private int securityTestsConducted;
+	private float percentCoveredForBasicTests;
+	private String jarFileName;
 	
 	private List<BasicTest> basicTests = new ArrayList<BasicTest>();
 	private List<SecurityTest> securityTests = new ArrayList<SecurityTest>();
 	
-	/**
-	 * TODO
-	 */
+	public OHSFile() {
+	}
 	
-	public int getVersion() {
-		return version;
-	}
-	public void setVersion(int version) {
-		this.version = version;
-	}
+	
+	
 	public long getTimestamp() {
 		return timestamp;
 	}
+	public String getJarFileName() {
+		return jarFileName;
+	}
+
+	public void setJarFileName(String jarFileName) {
+		this.jarFileName = jarFileName;
+	}
+
+	public short getVersion() {
+		return version;
+	}
+	public void setVersion(short version) {
+		this.version = version;
+	}
+
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
-	}
-	public int getSecurityTestOffset() {
-		return securityTestOffset;
-	}
-	public void setSecurityTestOffset(int securityTestOffset) {
-		this.securityTestOffset = securityTestOffset;
 	}
 	public byte[] getHashOfJarFile() {
 		return hashOfJarFile;
@@ -68,12 +70,6 @@ public class OHSFile {
 	public void setPercentCoveredForBasicTests(float percentCoveredForBasicTests) {
 		this.percentCoveredForBasicTests = percentCoveredForBasicTests;
 	}
-	public int getSecurityTestsConducted() {
-		return securityTestsConducted;
-	}
-	public void setSecurityTestsConducted(int securityTestsConducted) {
-		this.securityTestsConducted = securityTestsConducted;
-	}
 	public List<BasicTest> getBasicTests() {
 		return basicTests;
 	}
@@ -84,7 +80,6 @@ public class OHSFile {
 		}
 		return result;
 	}
-	
 	public List<BasicTest> getPassedBasicTests() {
 		ArrayList<BasicTest> result = new ArrayList<BasicTest>();
 		for(BasicTest t : basicTests) {
@@ -94,6 +89,11 @@ public class OHSFile {
 	}
 	public void addBasicTest(BasicTest test) {
 		this.basicTests.add(test);
+		if(test.isPass()) {
+			passCount++;
+		} else {
+			failCount++;
+		}
 	}
 	public List<SecurityTest> getSecurityTests() {
 		return securityTests;
@@ -101,31 +101,17 @@ public class OHSFile {
 	public void addSecurityTest(SecurityTest test) {
 		this.securityTests.add(test);
 	}
-	
-	public void toYAML()
-	{
-		
-		  System.out.println("Total predefined tests run: " + securityTestsConducted);
-          System.out.println("Number of predefined tests that passed: "+getPassCount());
-          System.out.println("Number of predefined tests that failed: "+getFailCount());
-          System.out.println("Total code coverage percentage: "+getPercentCoveredForBasicTests()+" Unique error count: "+getFailCount());
-          System.out.println("Errors seen: ");
-          	for(BasicTest t:getPassedBasicTests())
-          		System.out.println("	-"+t.getOutputErr());
-		 
+
+
+
+	@Override
+	public String toString() {
+		return "OHSFile [version=" + version + ", timestamp=" + timestamp + ", hashOfJarFile="
+				+ Arrays.toString(hashOfJarFile) + ", passCount=" + passCount + ", failCount=" + failCount
+				+ ", percentCoveredForBasicTests=" + percentCoveredForBasicTests + ", securityTestsConducted="
+				+ securityTests.size()+ ", jarFileName=" + jarFileName + ", basicTests=" + basicTests
+				+ ", securityTests=" + securityTests + "]";
 	}
-	
-	//another possbile implementation that would allow for us to be able to print the yaml in tester?
-	//not sure what the %s is
-	/*public String toYAML() {
-		return new StringBuilder()
-				.append( format( "Total predefined tests run:  %s\n", passCount + failCount ) )
-	            .append( format( "Number of predefined tests that passed: %s\n", passCount ) )
-	            .append( format( "Number of predefined tests that failed: %s\n", failCount ) )
-	            .append( format( "Total code coverage percentage: %s\n", percentCoveredForBasicTests )
-	            .append( format( "Errors seen: \n",  ) )//add something
-	            .toString();
-	}*/
 	
 	
 }

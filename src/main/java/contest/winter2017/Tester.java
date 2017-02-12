@@ -3,6 +3,7 @@ package contest.winter2017;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
 import java.util.jar.*;
 
@@ -12,8 +13,7 @@ import org.jacoco.core.tools.*;
 
 import com.troyberry.util.*;
 
-import contest.winter2017.Parameter;
-import contest.winter2017.ohsfile.BasicTest;
+import contest.winter2017.ohsfile.*;
 import contest.winter2017.range.*;
 
 /**
@@ -69,44 +69,41 @@ public class Tester {
 	/**
 	 * bbTests is the number of black box tests to execute
 	 */
-	private int bbTests;
+	private final int bbTests;
 
 	/**
 	 * timeGoal is the amount time in milliseconds that we have to match
 	 */
-	private long timeGoal;
+	private final long timeGoal;
 	
 	/**
 	 * if true, only the YAML report is in the output
 	 */
-	private boolean toolChain;
+	private final boolean toolChain;
+	
+	private final boolean stopAtBBTests;
+	
+	private final OHSFile outputFile;
 	
 	
 	/**
 	 * array list of unique errors seen
 	 */
 	ArrayList<String> errors = new ArrayList<String>();
+
+	public Tester(int bbTests, int timeGoal, boolean toolChain, boolean stopAtBBTests) {
+		this.outputFile = new OHSFile();
+		outputFile.setTimestamp(System.currentTimeMillis());
+		this.bbTests = bbTests;
+		this.timeGoal = timeGoal; // If user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
+		this.toolChain = toolChain;
+		this.stopAtBBTests = stopAtBBTests;
+	
+	}
 		
 	//////////////////////////////////////////
 	// PUBLIC METHODS
 	//////////////////////////////////////////
-	
-	/**
-	 * Method initializes the additional options specified by the user
-
-	 * @param bbTests - integer representing the number of tests to execute
-	 * @param timeGoal - integer representing the time goal in milliseconds
-	 */
-	public void setAdditionalOptions(int bbTests, int timeGoal, boolean toolChain) {
-		this.bbTests = bbTests;
-		this.timeGoal = timeGoal * 60000;//if user didn't enter a time goal, this number will be negative. if we don't set a variable called time to end and instead do currenttime-timegoal >0 this can work bc there is no time goal
-		this.toolChain = toolChain;
-		//default settings for both bbTests and timeGoal
-		if(bbTests == -1 && timeGoal == -1){
-			bbTests = 1000;
-			timeGoal = 300000;//5 minutes in milliseconds
-		}
-	}
 	
 	/**
 	 * Method that will initialize the Framework by loading up the jar to test, and then extracting
@@ -127,6 +124,15 @@ public class Tester {
 
 		File jarFileToTest = new File(this.jarToTestPath);
 		this.jacocoOutputFilePath = this.jacocoOutputDirPath+"\\"+jarFileToTest.getName().replaceAll("\\.", "_")+JACOCO_OUTPUT_FILE_SUFFIX;
+		
+		outputFile.setJarFileName(initJarToTestPath);
+		try {
+			outputFile.setHashOfJarFile(Utils.createChecksum(jarFileToTest));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("Unable to generate checksum of jar file to test");
+		}
 		
 		File jacocoOutputFile = new File(this.jacocoOutputFilePath);
 		if (jacocoOutputFile !=null && jacocoOutputFile.exists()) {
@@ -210,6 +216,11 @@ public class Tester {
 			 
 			// instrument the code to code coverage metrics, execute the test with given parameters, then show the output
 			Output output = instrumentAndExecuteCode(test.getParameters().toArray());
+			String result = new String();
+			for(Object o : test.getParameters()) {
+				result += o.toString();
+			}
+			outputFile.addBasicTest(new BasicTest(result, output.getStdOutString(), output.getStdErrString(), test.getStdOutExpectedResultRegex(), test.getStdErrExpectedResultRegex()));
 			printBasicTestOutput(output);
 			
 			// determine the result of the test based on expected output/error regex
@@ -239,6 +250,7 @@ public class Tester {
 		} 
 		// print the basic test results and the code coverage associated with the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
+		outputFile.setPercentCoveredForBasicTests((float)percentCovered);
 		System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
 		System.out.println(HORIZONTAL_LINE);
 	}
@@ -246,10 +258,11 @@ public class Tester {
 	
 	public void executeSecurityTests() {
 		System.out.println();
-		long timeToEnd = System.currentTimeMillis() + timeGoal;
 		System.out.println("Starting security tests");
 		int passCount = 0;
 		int failCount = 0;
+		long timeToEnd;
+		int testCount = 0;
 		
 		//each row represents a different parameter
 		//each row holds a parameter we need to test in the first index, values in the subsequent indexes
@@ -258,7 +271,7 @@ public class Tester {
 		//List<String> previousParameterStrings = new ArrayList<String>();
 		
 		//handles dependent
-		if(!this.parameterFactory.isBounded()){
+		if(!this.parameterFactory.isBounded()) {
 			//gets all enumerated values. The indexes of each enumerated value correspond to the row index of potentialParametersLists.
 			//UPDATE 1/30- gets all enumperatedParameters, but will only hold nondependent parameters. the dependent ones will be removed later
 			//List<String> enumeratedParameters = this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
@@ -304,17 +317,6 @@ public class Tester {
 			}
 			
 			
-			//starting tests
-			
-			//tests expecting black box to pass
-			//runs with a blank argument and with an argument with only a string as an argument
-			Object[] firstTests = {"", "random+sStrinG023;.1"};
-			for(int k = 0; k<firstTests.length; k++){
-				bbTests--;
-				Object[] toTest = {firstTests[k]};
-				executeAndPrintResults(toTest, false);
-			}
-			
 			/*There are five stages in our black box testing method.
 			 * Stage 1: 1/10th of the tests will test the typical edge cases of the parameter types one parameter at a time (i.e. for an integer, an edge case may be a negative number)
 			 * Stage 2: 1/10th of the tests 
@@ -323,7 +325,10 @@ public class Tester {
 			//RANDOM EVERYTHING
 			/*timeGoal will be less than 0 if user did not enter a timeGoal or bbTests*/
 			//while there are still more bbTests to run or there is extra time, tests will continue to be performed
-			while(System.currentTimeMillis() < timeToEnd && bbTests <= 0|| bbTests > 0){
+			timeToEnd = System.currentTimeMillis() + timeGoal;
+			while(stopAtBBTests ? (testCount < bbTests): (System.currentTimeMillis() < timeToEnd)) {
+				System.out.println("doin stuff!!! " + System.currentTimeMillis() + ", " + timeToEnd);
+				testCount++;
 				//this list's slots mirror those in dependentPotentialParametersLists but are Objects we can test rather than parameters
 				
 				//makes deep copy so we can remove values from them later to test and not repeat any of them
@@ -376,7 +381,6 @@ public class Tester {
 					passCount++;
 				else
 					failCount++;
-				bbTests--;
 			}
 			
 		}
@@ -388,7 +392,9 @@ public class Tester {
 			
 			//starting tests
 			//RANDOM EVERYTHING
-			while(System.currentTimeMillis() < timeToEnd || timeGoal < 0 && bbTests !=0){
+			timeToEnd = System.currentTimeMillis() + timeGoal;
+			while(stopAtBBTests ? (testCount < bbTests) : (System.currentTimeMillis() < timeToEnd)){
+				testCount++;
 				for(int k = 0; k<parameters.length; k++){
 					parameters[k] = generateValues(fixedParameters.get(k)).get(0);//wait how does this work generate values returns an arraylist
 					//what if the parameters are enumerated?
@@ -535,11 +541,17 @@ public class Tester {
 	 * 
 	 * @return true if the security test passed, false if not
 	 */
-	public boolean executeAndPrintResults(Object[] toTest, boolean errorExpected){
+	public boolean executeAndPrintResults(Object[] toTest, boolean errorExpected) {
 		Output output = instrumentAndExecuteCode(toTest);
+		String result = new String();
+		for(Object o : toTest) {
+			result += o.toString();
+		}
+		float covered = (float) generateSummaryCodeCoverageResults();
+		outputFile.addSecurityTest(new SecurityTest(result, output.getStdOutString(), output.getStdErrString(), covered));
 		printBasicTestOutput(output);
 		boolean passed = false;
-		if(!errorExpected){
+		if(!errorExpected) {
 			if(output.getStdErrString().indexOf("Exception") != -1){
 				System.out.println("security test result: FAIL");
 			} else{
@@ -877,6 +889,10 @@ public class Tester {
 		// Below is the third example of how to tap into code coverage metrics
 		System.out.println("\n");
 		System.out.println(generateDetailedCodeCoverageResults());
+	}
+
+	public OHSFile getOHSFile() {
+		return outputFile;
 	}
 	
 	
