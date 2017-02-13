@@ -562,7 +562,7 @@ public class Tester {
 			}
 			// If the parameter is enumerated, returns a random, formatted, enumerated value
 			if (parameter.isEnumeration()) {
-				String enumeratedValue = parameter.getEnumerationValues().get(parameter.getEnumerationValues().size());
+				String enumeratedValue = parameter.getEnumerationValues().get(parameter.getEnumerationValues().size()-1);
 
 				// if the parameter has internal format (eg."<number>:<number>PM EST")
 				if (parameter.isFormatted()) {
