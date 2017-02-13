@@ -40,7 +40,10 @@ public class StringRange extends Range<String> {
 	public String getCharSet() {
 		return charSet;
 	}
-
+	
+	/**
+	 * @returns a random String
+	 */
 	@Override
 	public String getAppropriate(){
 		int length = Maths.randRange(minLength, maxLength);
@@ -52,14 +55,21 @@ public class StringRange extends Range<String> {
 		return result;
 	}
 	
+	/**
+	 * @returns returns String representation that is 
+	 * a value that is either outside the range
+	 * of a certain type or a value of a different type
+	 */
+	@Override
 	public String getInappropriate(){
 		String[] inappropriateValues = {"", "\"      \""};
 		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	
 	/**
-	 * returns typical string edge case
+	 * @returns a String representation typical edge case of a double
 	 */
+	@Override
 	public String getGeneralEdgeCase(){
 		String[] edges = {"", "\"         \"", ",~`"};
 		return edges[(int)(Math.random() * edges.length)];

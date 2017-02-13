@@ -19,29 +19,30 @@ public class DoubleRange extends NumberRange<Double> {
 	public DoubleRange(Double min, Double max) {
 		super(min, max);
 	}
-
+	
+	/**
+	 * @returns a random String representation of a double within the range of max and min
+	 */
 	public String getAppropriate() {
 		return Maths.randRange(getMin(), getMax())+"";
 	}
 	
+	/**
+	 * @returns returns String representation that is 
+	 * a value that is either outside the range
+	 * of a certain type or a value of a different type
+	 */
 	public String getInappropriate(){
 		String[] inappropriateValues = {"string", "" + (getMin() - 1), "" + (getMax() + 1)};
 		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	
 	/**
-	 * returns a typical edge cases for a double
+	 * @returns a String representation typical edge case of a double
 	 */
 	public String getGeneralEdgeCase(){
 		Double[] edges = {0.0, -50.0, Double.MAX_VALUE, Double.MIN_VALUE};
 		return edges[(int)(Math.random() * edges.length)] + "";
 	}
 	
-	public void setMin(Double newMin){
-		super.setMin(newMin);
-	}
-	
-	public void setMax(Double newMax){
-		super.setMax(newMax);
-	}
 }

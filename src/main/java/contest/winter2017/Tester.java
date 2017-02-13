@@ -339,131 +339,62 @@ public class Tester {
 		long s1End = (long) (stageComparer * .05);
 		long s2End = (long) (stageComparer * .05 + s1End);
 		long s3End = (long) (stageComparer * .1 + s2End);
-		long s4End = (long) (stageComparer * .4 + s3End);// only used for
-															// unbounded jars
+		long s4End = (long) (stageComparer * .4 + s3End);// only used for unbounded jars
 
-		// each row represents a different parameter
-		// each row holds a parameter we need to test in the first index, values
-		// in the subsequent indexes
-		// UPDATE 1/30 - holds a different dependent parameter in each row.
-		// subsequent values are values to test. know if dependent if it has a
-		// dependent param map
-		List<List<Parameter>> allDependentParametersLists = new ArrayList<List<Parameter>>();
-		// List<String> previousParameterStrings = new ArrayList<String>();
-
-		// handles dependent
+		// jars with dependent parameters
 		if (!this.parameterFactory.isBounded()) {
-			// gets all enumerated values. The indexes of each enumerated value
-			// correspond to the row index of potentialParametersLists.
-			// UPDATE 1/30- gets all enumperatedParameters, but will only hold
-			// nondependent parameters. the dependent ones will be removed later
-			// List<String> enumeratedParameters =
-			// this.parameterFactory.getNext(previousParameterStrings).get(0).getEnumerationValues();
+			
+			//Each row will hold the nondependent parameters for a different dependent parameter argument.
 			List<String> allNondependentParams = this.parameterFactory.getNext(new ArrayList<String>()).get(0)
 					.getEnumerationValues();
-			// generateValues(this.parameterFactory.getNext(new
-			// ArrayList<String>()).get(0), "appropriate");//formats them as
-			// well
-			// corresponds to the rows of dependentPotentialParameterLists
+			
+			//copies allNondependentParams and replaces all of the formatted values
 			List<String> nondependentParamsToTest = new ArrayList<String>();
 			for (String param : allNondependentParams) {
 				nondependentParamsToTest.add(generateValue(param, "appropriate"));
 			}
-			List<String> allDependentParameters = new ArrayList<String>();
+			
+			//holds a dependent parameter argument at each index.
+			List<String> allDependentParams = new ArrayList<String>();
+			
+			// Each row will hold the dependent parameters for a different dependent parameter argument.
+			//the rows of allDependentParameterLists correspond the indexes of allDependentParameters
+			List<List<Parameter>> allDependentParamsLists = new ArrayList<List<Parameter>>();
 
 			for (int k = allNondependentParams.size() - 1; k >= 0; k--) {
-				// need an array list to get the next potential parameter
+				//uses dummyPrevParamString to get the next potential parameter
 				ArrayList<String> dummyPrevParamString = new ArrayList<String>();
 				dummyPrevParamString.add(allNondependentParams.get(k));
-				// puts enumerated value as first index
+				//gets a next possible parameter argument
 				List<Parameter> potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
 
 				// enumerated value is a dependent parameter
 				if (!potentialParameters.isEmpty()) {
-					allDependentParameters.add(0, allNondependentParams.get(k));
-					allDependentParametersLists.add(0, potentialParameters);// adds
-																			// the
-																			// dependent
-																			// parameter
-																			// to
-																			// a
-																			// row
+					allDependentParams.add(0, allNondependentParams.get(k));
+					//adds the dependent parameter to a row in allDependentParamsLists
+					allDependentParamsLists.add(0, potentialParameters);
 
-					// dummyPrevParamString used only to find other potential
-					// parameters for a dependent parameter
+					// dummyPrevParamString used only to find other potential parameters for a dependent parameter
 					dummyPrevParamString = new ArrayList<String>();
-					dummyPrevParamString.add(allNondependentParams.get(k));// will
-																			// be
-																			// "--Integer"
-																			// or
-																			// something
-					while (!potentialParameters.isEmpty()) {// make a dummy
-															// previous
-															// parameter strings
-															// using the
-															// generate values
-															// method?
-						// check if its an enumeration. if it is, get the list
-						// of enumerations and you can start testing that
-
+					dummyPrevParamString.add(allNondependentParams.get(k));
+					
+					while (!potentialParameters.isEmpty()) {
 						dummyPrevParamString.add(
 								generateValue(potentialParameters.get(potentialParameters.size() - 1), "appropriate"));
 						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
 						if (!potentialParameters.isEmpty())
-							allDependentParametersLists.get(0).add(potentialParameters.get(0));
+							allDependentParamsLists.get(0).add(potentialParameters.get(0));
 					}
+					//if the enumerator is dependent, it is taken out of the allNondependentParams array.
 					allNondependentParams.remove(k);
 				}
 			}
-
-			// Parameter stupid = this.parameterFactory.getNext(new
-			// ArrayList<String>()).get(0);
-			// System.out.println("TEST");
-			// System.out.println(generateValues(this.parameterFactory.getNext(new
-			// ArrayList<String>()).get(0), "appropriate"));
-			// System.out.println(generateValues(stupid, "edge"));
-
-			// just stuff to make sure everything works -- delete later
-			// System.out.println("nondependent enums: " +
-			// enumeratedParametersNondependent);
-			// for(int k = 0; k < dependentPotentialParametersLists.size();
-			// k++){
-			// System.out.println("type: " +
-			// dependentPotentialParametersLists.get(k).get(0).getType());
-			// System.out.println("enum: " +
-			// enumeratedParametersDependent.get(k));
-			// System.out.println("dependentPotentialParameters: " +
-			// dependentPotentialParametersLists.get(k));
-			// }
-
-			// Parameter nondependentParam = this.parameterFactory.getNext(new
-			// ArrayList<String>()).get(0);
-
-			// RANDOM EVERYTHING
-			/*
-			 * timeGoal will be less than 0 if user did not enter a timeGoal or
-			 * bbTests
-			 */
-			// while there are still more bbTests to run or there is extra time,
-			// tests will continue to be performed
-
+			
+			//STARTING TESTS
+			// while there are still more bbTests to run or the correct number of bbTests have been run
+			//but we have not reached the time goal, tests will continue to be performed.
 			while (STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)) {
 
-				// this list's slots mirror those in
-				// dependentPotentialParametersLists but are Objects we can test
-				// rather than parameters
-
-				// makes deep copy so we can remove values from them later to
-				// test and not repeat any of them
-				// List<String> enumeratedParametersNondependentCopy =
-				// makeDeepCopy(enumeratedParametersNondependent);
-				// System.out.println(enumeratedParametersNondependent + "
-				// enumnondependent1");
-				// List<String> enumeratedParametersNondependentCopy = new
-				// ArrayList<String>();
-				// for(String param : enumeratedParametersNondependent){
-				// enumeratedParametersNondependentCopy.add(param);
-				// }
 
 				int numOfNondependentToTest = 0;
 				int numOfDependentToTest = 0;
@@ -472,8 +403,7 @@ public class Tester {
 						|| (!STOPATBBTESTS && (startTime + s1End > System.currentTimeMillis())
 								|| (startTime + s3End > System.currentTimeMillis())
 										&& (startTime + s4End > System.currentTimeMillis()))) {
-					// sometimes test a dependent arg, sometimes test a
-					// nondependent arg
+					// sometimes test a dependent arg, sometimes test one nondependent arg
 					if ((int) (Math.random() * 2) == 0) {
 						numOfNondependentToTest = 1;
 					} else {
@@ -481,92 +411,70 @@ public class Tester {
 					}
 				} else {
 					numOfNondependentToTest = (int) (Math.random() * allNondependentParams.size());
-					numOfDependentToTest = (int) (Math.random() * allDependentParametersLists.size());
+					numOfDependentToTest = (int) (Math.random() * allDependentParamsLists.size());
 				}
-
+				
+				//changes what type of values should be generated based on the current stage of the test
 				String paramTestType;
 				if (STOPATBBTESTS && s2End > testCount
 						|| !STOPATBBTESTS && startTime + s2End > System.currentTimeMillis()) {
 					paramTestType = "edge";
-					// enumeratedParametersNondependentCopy =
-					// generateValues(this.parameterFactory.getNext(new
-					// ArrayList<String>()).get(0), "edge");
 				} else if (STOPATBBTESTS && s3End > testCount
 						|| !STOPATBBTESTS && startTime + s3End > System.currentTimeMillis()) {
 					paramTestType = "inappropriate";
-					// enumeratedParametersNondependentCopy =
-					// generateValues(this.parameterFactory.getNext(new
-					// ArrayList<String>()).get(0), "innapropriate");
 				} else {
 					paramTestType = "appropriate";
-					// enumeratedParametersNondependentCopy =
-					// generateValues(this.parameterFactory.getNext(new
-					// ArrayList<String>()).get(0), "appropriate");
 				}
-				// TODO: replace patterns here
-				// why is it not a deep copy
-				//// enumeratedParametersNondependentCopy =
-				// generateValues(this.parameterFactory.getNext(new
-				// ArrayList<String>()).get(0),paramTestType);
-				// this wouldn't even work because it would return all of the
-				// enumerated parameters
-
-				// replaces any formatted nondependent parameter args
-				// List<String> enumeratedParametersNondependentCopy = new
-				// ArrayList<String>();
+				
 				nondependentParamsToTest.clear();
 				for (String param : allNondependentParams) {
 					nondependentParamsToTest.add(generateValue(param, paramTestType));
 				}
 
 				List<Object> parameters = new ArrayList<Object>();
-				// nondependent
+				
+				//handling nondependentparameters
+				// removes a nondependent parameter at a random index and adds its value to parameters
 				for (int k = 0; k < numOfNondependentToTest && allNondependentParams.size() != 0; k++) {
-					// removes a nondependent parameter at a random index and
-					// adds it to parameters
 					parameters.add(
 							nondependentParamsToTest.remove((int) (Math.random() * nondependentParamsToTest.size())));
 				}
 
-				// dependent
+				//handling dependent parameters
 				List<List<Object>> dependentParametersListsToTest = new ArrayList<List<Object>>();
-				// fills dependentParameters with random, appropriate values
-				for (int r = 0; r < allDependentParametersLists.size(); r++) {
+				//fills dependentParametersListsToTest with values
+				for (int r = 0; r < allDependentParamsLists.size(); r++) {
 					dependentParametersListsToTest.add(new ArrayList<Object>());
-					for (int c = 0; c < allDependentParametersLists.get(r).size(); c++) {
+					for (int c = 0; c < allDependentParamsLists.get(r).size(); c++) {
 						dependentParametersListsToTest.get(r)
-								.add(generateValue(allDependentParametersLists.get(r).get(c), paramTestType));
+								.add(generateValue(allDependentParamsLists.get(r).get(c), paramTestType));
 					}
 				}
 
 				//formats any of the arguments that need formatting
 				List<String> dependentParametersToTest = new ArrayList<String>();
-				for (String param : allDependentParameters) {
+				for (String param : allDependentParams) {
 					dependentParametersToTest.add(generateValue(param, paramTestType));
 				}
-				// List<String> enumeratedParametersDependentCopy = new
-				// ArrayList<String>();
-				// for(String param : enumeratedParametersDependent){
-				// enumeratedParametersDependentCopy.add(param);
-				// }
-
+				
+				//adds nondependent parameter values to the parameters arrayList
 				for (int k = 0; k < numOfDependentToTest && dependentParametersListsToTest.size() != 0; k++) {
 					int row = (int) (Math.random() * dependentParametersToTest.size());
 					parameters.add(dependentParametersToTest.get(row));
-					//System.out.println(dependentParametersToTest.get(row) + "row");
-					// removes a dependent parameter at a random index and adds
-					// it to parameters
-					for (int c = 0; c < allDependentParametersLists.get(row).size(); c++) {
+					// removes a dependent parameter at a random index and adds it to parameters
+					for (int c = 0; c < allDependentParamsLists.get(row).size(); c++) {
 						// if its an enumerated value, it will add a random enumeration
-						//System.out.println("row and types" +generateValue(allDependentParametersLists.get(row).get(c), paramTestType));
 						parameters.add(generateValue(dependentParametersListsToTest.get(row).get(c), paramTestType));
 					}
 					dependentParametersToTest.remove(row);
 					dependentParametersListsToTest.remove(row);
 				}
-
-				if (allDependentParameters.size() == 0)
+				
+				//if there are no nondependent parameters, we pass in a random string
+				if (allDependentParams.size() == 0)
 					parameters.add((new StringRange()).random(paramTestType));
+				
+				//executes the security test
 				if (executeAndPrintResults(parameters.toArray(), paramTestType))
 					passCount++;
 				else
@@ -632,7 +540,7 @@ public class Tester {
 	 * passed into the method.
 	 * 
 	 * @param parameter
-	 *            is the parameter that the value(s) will be generated from.
+	 *            is the parameter that the value will be generated from.
 	 * @param testParamType
 	 *            is the type of value that should be generated. type will have
 	 *            the value of either "edge" for edge cases, "inappropriate" for
@@ -640,41 +548,22 @@ public class Tester {
 	 *            or "appropriate" for a value that is the same type of the
 	 *            parameter's type.
 	 * 
-	 * @returns a list containing one value to be executed as a parameter. If
-	 *          the parameter is enumerated, it returns a list of enumerated
-	 *          values
+	 * @returns a value to be executed as a parameter based on the parameter and
+	 * the paramTestType.
 	 */
 	public String generateValue(Object objectParameter, String paramTestType) {
-		// make a range object later?
-		// List<String> previousParameterStrings = new ArrayList<String>(); //
-		// start with a blank parameter list since we are going to start with
-		// the first parameter
-		// List<Parameter> potentialParameters =
-		// this.parameterFactory.getNext(previousParameterStrings);
-		// Parameter potentialParameter = potentialParameters.get(0);
-		// List<String> parameterStrings = new ArrayList<String>();
 		String parameterString = "";
 		if (objectParameter instanceof Parameter) {
 			Parameter parameter = (Parameter) objectParameter;
-			// if a parameter is optional, randomly decide whether to use it or
-			// not
+			// if a parameter is optional, randomly decide whether to use it or not
 			if (parameter.isOptional() && (int) (Math.random() * 2) == 1) {
 				return "";
 			}
-			// if parameter is an enumeration, the method returns the enumerated
-			// values
-			if (parameter.isEnumeration()) {// if the parameter is an
-											// enumeration, the execute security
-											// tests method should have already
-											// known this and should plan
-											// accordingly
+			// If the parameter is enumerated, returns a random, formatted, enumerated value
+			if (parameter.isEnumeration()) {
 				String enumeratedValue = parameter.getEnumerationValues().get(parameter.getEnumerationValues().size());
-				// parameterStrings = parameter.getEnumerationValues().get(0) +
-				// " "; // dumb logic - given a list of options, always use the
-				// first one
 
-				// if the parameter has internal format (eg.
-				// "<number>:<number>PM EST")
+				// if the parameter has internal format (eg."<number>:<number>PM EST")
 				if (parameter.isFormatted()) {
 					// loop over the areas of the format that must be replaced
 					// with values
@@ -691,13 +580,6 @@ public class Tester {
 					// build the formatted parameter string with the chosen
 					// values (eg. 1:1PM EST)
 					enumeratedValue = parameter.getFormattedParameter(enumeratedValue, formatVariableValues);
-
-					/*
-					 * parameterString = parameter.getFormattedParameter(
-					 * parameterString, formatVariableValues);
-					 */
-
-					// previousParameterStrings.add(parameterString);
 				}
 				return enumeratedValue;
 				// if it is not an enumeration parameter, it is either an
@@ -747,12 +629,11 @@ public class Tester {
 					}
 
 				} else {
-					parameterString = "unknown type";// should we do something
-														// about this
+					parameterString = "unknown type";
 				}
 			}
 		}
-		// formatted parameters to be reformatted
+		// formatted parameter arguments to be reformatted
 		else if (objectParameter instanceof String) {
 			parameterString = (String) objectParameter;
 			Range range;
