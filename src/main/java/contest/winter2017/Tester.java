@@ -466,7 +466,7 @@ public class Tester {
 					for (int c = 0; c < allDependentParamsLists.get(row).size(); c++) {
 						// if its an enumerated value, it will add a random enumeration
 						parameters.add(generateValue(dependentParametersListsToTest.get(row).get(c), paramTestType));
-					}
+					} //TODO faulty logic leads to index out of bounds or something
 					dependentParametersToTest.remove(row);
 					dependentParametersListsToTest.remove(row);
 				}
