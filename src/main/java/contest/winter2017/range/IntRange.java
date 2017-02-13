@@ -20,26 +20,34 @@ public class IntRange extends NumberRange<Integer> {
 		super(min, max);
 	}
 
+	/**
+	 * @returns a random String representation of an integer within the range of max and min
+	 */
 	@Override
-	public Integer random() {
-		return Maths.randRange(getMin(), getMax());
+	public String getAppropriate() {
+		return Maths.randRange(getMin(), getMax()) + "";
 	}
 	
 	/**
-	 * returns an array of typical edge cases for an integer
+	 * @returns returns String representation that is 
+	 * a value that is either outside the range
+	 * of a certain type or a value of a different type
 	 */
-	public Integer[] generalEdgeCases(){
-		Integer[] output = {0, -50, Integer.MAX_VALUE, Integer.MIN_VALUE};
-		return output;
+	@Override
+	public String getInappropriate(){
+		String[] inappropriateValues = {50.0 + "", "string", "" + (getMin() - 1), "" + (getMax() + 1)};
+		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	
-	public void setMin(Integer newMin){
-		super.setMin(newMin);
+	/**
+	 * @returns a String representation typical edge case of an integer
+	 */
+	@Override
+	public String getGeneralEdgeCase(){
+		Integer[] edges = {0, -50, Integer.MAX_VALUE, Integer.MIN_VALUE};
+		return edges[(int)(Math.random() * edges.length)] + "";
 	}
 	
-	public void setMax(Integer newMax){
-		super.setMax(newMax);
-	}
 	
 	
 }
