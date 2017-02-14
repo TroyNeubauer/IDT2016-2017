@@ -626,7 +626,7 @@ public class Tester {
 						// values (eg. 1:1PM EST)
 						parameterString = parameter.getFormattedParameter(formatVariableValues);
 					} else {
-						parameterString = range.random(paramTestType) + ""; 
+						parameterString = range.random(paramTestType); 
 					}
 
 				} else {

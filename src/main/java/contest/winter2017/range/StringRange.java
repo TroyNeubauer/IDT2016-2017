@@ -52,7 +52,7 @@ public class StringRange extends Range<String> {
 		for(int i = 0; i < length; i++) {
 			result += charSet.charAt(Maths.randRange(0, charSet.length() - 1));
 		}
-		return result;
+		return "\"" + result+"\"";
 	}
 	
 	/**
