@@ -228,6 +228,7 @@ public class Tester {
 
 		int passCount = 0;
 		int failCount = 0;
+		StringBuffer resultToPrint = new StringBuffer();
 
 		// iterate through the lists of tests and execute each one
 		for (Test test : this.tests) {
@@ -241,43 +242,40 @@ public class Tester {
 			}
 			outputFile.addBasicTest(new BasicTest(result, output.getStdOutString(), output.getStdErrString(),
 					test.getStdOutExpectedResultRegex(), test.getStdErrExpectedResultRegex()));
-			if (!TOOLCHAIN)
-				printBasicTestOutput(output);
+			
+			resultToPrint.append(printBasicTestOutput(output));
 
 			// determine the result of the test based on expected output/error
 			// regex
 			if (output.getStdOutString().matches(test.getStdOutExpectedResultRegex())
 					&& output.getStdErrString().matches(test.getStdErrExpectedResultRegex())) {
-				if (!TOOLCHAIN)
-					System.out.println("basic test result: PASS");
+				resultToPrint.append("basic test result: PASS\n");
 				passCount++;
 			} else {
-				if (!TOOLCHAIN)
-					System.out.println("basic test result: FAIL ");
+				resultToPrint.append("basic test result: FAIL\n");
 				failCount++;
 
 				// since we have a failed basic test, show the expectation for
 				// the stdout
 				if (!output.getStdOutString().matches(test.getStdOutExpectedResultRegex())) {
-					if (!TOOLCHAIN) {
-						System.out.println("\t ->stdout: " + output.getStdOutString());
-						System.out.println(
-								"\t ->did not match expected stdout regex: " + test.getStdOutExpectedResultRegex());
-					}
+					
+					resultToPrint.append("\t ->stdout: " + output.getStdOutString() + "\n"+
+							"\t ->did not match expected stdout regex: " + test.getStdOutExpectedResultRegex() + "\n");
+					
 				}
 
 				// since we have a failed basic test, show the expectation for
 				// the stderr
 				if (!output.getStdErrString().matches(test.getStdErrExpectedResultRegex())) {
-					if (!TOOLCHAIN) {
-						System.out.println("\t ->stderr: " + output.getStdErrString());
-						System.out.println(
-								"\t ->did not match expected stderr regex: " + test.getStdErrExpectedResultRegex());
-					}
+					resultToPrint.append("\t ->stderr: " + output.getStdErrString() + "\n" +
+							"\t ->did not match expected stderr regex: " + test.getStdErrExpectedResultRegex() + "\n");
 				}
 			}
-			if (!TOOLCHAIN)
+			if (!TOOLCHAIN){
+				System.out.print(resultToPrint);
 				System.out.println(HORIZONTAL_LINE);
+			}
+			resultToPrint.delete(0, resultToPrint.length());
 		}
 		// print the basic test results and the code coverage associated with
 		// the basic tests
@@ -833,14 +831,15 @@ public class Tester {
 	}
 
 	/**
-	 * Method used to print the basic test output (std out/err)
+	 * Method returns the basic test output (std out/err)
 	 * 
 	 * @param output
 	 *            - Output object containing std out/err to print
+	 * @return 
 	 */
-	private void printBasicTestOutput(Output output) {
-		System.out.println("stdout of execution: " + output.getStdOutString());
-		System.out.println("stderr of execution: " + output.getStdErrString());
+	private String printBasicTestOutput(Output output) {
+		return "stdout of execution: " + output.getStdOutString() + 
+		"\nstderr of execution: " + output.getStdErrString()+"\n";
 	}
 
 	/**
