@@ -83,15 +83,15 @@ public class Tester {
 	 * if true, only the YAML report is in the output
 	 */
 	private final boolean TOOLCHAIN;
-
+	
+	/**
+	 * if false, bbTests was not specified but a timeGoal was
+	 */
 	private final boolean STOPATBBTESTS;
 
 	private final OHSFile outputFile;
 
-	/**
-	 * array list of unique errors seen
-	 */
-	ArrayList<String> errors = new ArrayList<String>();
+	
 
 	public Tester(int bbTests, int timeGoal, boolean toolChain, boolean stopAtBBTests) {
 		this.outputFile = new OHSFile();
@@ -300,6 +300,7 @@ public class Tester {
 		long startTime = System.currentTimeMillis();
 		long timeToEnd = startTime + TIMEGOAL;
 		int testCount = 0;
+		ArrayList<String> errors = new ArrayList<String>();//unique errors seen
 
 		/*
 		 * There are five stages in our black box testing method for unbounded
