@@ -33,7 +33,7 @@ public class DoubleRange extends NumberRange<Double> {
 	 * of a certain type or a value of a different type
 	 */
 	public String getInappropriate(){
-		String[] inappropriateValues = {"string", "" + (getMin() - 1), "" + (getMax() + 1)};
+		String[] inappropriateValues = {"","string", "" + (getMin() - 1), "" + (getMax() + 1)};
 		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	

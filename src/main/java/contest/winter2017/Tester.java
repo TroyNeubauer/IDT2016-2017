@@ -393,7 +393,7 @@ public class Tester {
 								generateValue(potentialParameters.get(potentialParameters.size() - 1), "appropriate"));
 						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
 						if (!potentialParameters.isEmpty())
-							allDependentParamsLists.get(0).add(potentialParameters.get(0));
+							allDependentParamsLists.get(0).add(potentialParameters.remove(0));//CHANGED GET TO REMOVE
 					}
 					// if the enumerator is dependent, it is taken out of the
 					// allNondependentParams array.
@@ -411,7 +411,7 @@ public class Tester {
 		// performed.
 		String paramTestType = "";
 		ArrayList<String> parameters = new ArrayList<String>();// parameters to
-																// be tested
+														
 		while (STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)) {
 
 			// changes what type of values should be generated based on
@@ -556,9 +556,17 @@ public class Tester {
 		}
 		double percentCovered = generateSummaryCodeCoverageResults();
 		if (!TOOLCHAIN) {
+			
+			//tap into code coverage metrics
+			System.out.println(generateDetailedCodeCoverageResults());
+			
+			System.out.println(HORIZONTAL_LINE);
+			
 			System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, "
 					+ failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
-			System.out.println(HORIZONTAL_LINE);
+			System.out.println(HORIZONTAL_LINE + "\n");
+			
+
 		}
 
 		// YAML output
@@ -569,7 +577,7 @@ public class Tester {
 		System.out.println("Unique error count: " + errors.size());
 		System.out.println("Errors seen:");
 		for (String err : errors)
-			System.out.println("\t-" + err);
+			System.out.println("   -" + err);
 		// showCodeCoverageResultsExample();
 
 	}

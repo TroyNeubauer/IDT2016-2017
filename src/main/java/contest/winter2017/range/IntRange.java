@@ -35,7 +35,7 @@ public class IntRange extends NumberRange<Integer> {
 	 */
 	@Override
 	public String getInappropriate(){
-		String[] inappropriateValues = {50.0 + "", "string", "" + (getMin() - 1), "" + (getMax() + 1)};
+		String[] inappropriateValues = {50.0 + "", "string", "" + (getMin() - 1), "" + (getMax() + 1),""};
 		return inappropriateValues[(int)(Math.random() * inappropriateValues.length)];
 	}
 	
