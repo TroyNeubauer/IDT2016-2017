@@ -10,11 +10,12 @@ import java.util.*;
  */
 public class OHSFile {
 
+	private String name;
 	private short version;
 	private long timestamp;
 	private byte[] hashOfJarFile = new byte[16];
 	private int passCount, failCount;
-	private float percentCoveredForBasicTests;
+	private float totalPercentCovered;
 	private String jarFileName;
 	
 	private List<BasicTest> basicTests = new ArrayList<BasicTest>();
@@ -64,11 +65,11 @@ public class OHSFile {
 	public void setFailCount(int failCount) {
 		this.failCount = failCount;
 	}
-	public double getPercentCoveredForBasicTests() {
-		return percentCoveredForBasicTests;
+	public double getTotalPercentCovered() {
+		return totalPercentCovered;
 	}
-	public void setPercentCoveredForBasicTests(float percentCoveredForBasicTests) {
-		this.percentCoveredForBasicTests = percentCoveredForBasicTests;
+	public void setTotalPercentCovered(float totalPercentCovered) {
+		this.totalPercentCovered = totalPercentCovered;
 	}
 	public List<BasicTest> getBasicTests() {
 		return basicTests;
@@ -108,9 +109,17 @@ public class OHSFile {
 	public String toString() {
 		return "OHSFile [version=" + version + ", timestamp=" + timestamp + ", hashOfJarFile="
 				+ Arrays.toString(hashOfJarFile) + ", passCount=" + passCount + ", failCount=" + failCount
-				+ ", percentCoveredForBasicTests=" + percentCoveredForBasicTests + ", securityTestsConducted="
+				+ ", percentCoveredForBasicTests=" + totalPercentCovered + ", securityTestsConducted="
 				+ securityTests.size()+ ", jarFileName=" + jarFileName + ", basicTests=" + basicTests
 				+ ", securityTests=" + securityTests + "]";
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	

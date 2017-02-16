@@ -15,7 +15,7 @@ public class StringRange extends Range<String> {
 		super();
 		this.minLength = 1;
 		this.maxLength = 50;
-		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+/?,.<>/*\\`~[] {}";
 	}
 
 	/**

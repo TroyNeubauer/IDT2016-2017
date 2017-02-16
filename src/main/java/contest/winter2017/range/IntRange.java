@@ -5,7 +5,7 @@ import com.troyberry.math.*;
 public class IntRange extends NumberRange<Integer> {
 	
 	/**
-	 * Creates a new DoubleRange object.
+	 * Creates a new IntRange object.
 	 */
 	public IntRange(){
 		super(-10000, 10000);

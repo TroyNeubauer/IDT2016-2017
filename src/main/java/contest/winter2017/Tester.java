@@ -83,7 +83,7 @@ public class Tester {
 	 * if true, only the YAML report is in the output
 	 */
 	private final boolean TOOLCHAIN;
-	
+
 	/**
 	 * if false, bbTests was not specified but a timeGoal was
 	 */
@@ -91,9 +91,12 @@ public class Tester {
 
 	private final OHSFile outputFile;
 
-	
 
-	public Tester(int bbTests, int timeGoal, boolean toolChain, boolean stopAtBBTests) {
+	public Tester(int bbTests, long timeGoal, boolean toolChain, boolean stopAtBBTests) {
+		if(Main.DEBUG) {
+			if(stopAtBBTests)System.out.println("stopping at " + bbTests + " bb tests");
+			else System.out.println("stopping after " + timeGoal + " MS");
+		}
 		this.outputFile = new OHSFile();
 		outputFile.setTimestamp(System.currentTimeMillis());
 		this.BBTESTS = bbTests;
@@ -134,8 +137,7 @@ public class Tester {
 		this.jacocoAgentJarPath = initJacocoAgentJarPath;
 
 		File jarFileToTest = new File(this.jarToTestPath);
-		this.jacocoOutputFilePath = this.jacocoOutputDirPath + "\\" + jarFileToTest.getName().replaceAll("\\.", "_")
-				+ JACOCO_OUTPUT_FILE_SUFFIX;
+		this.jacocoOutputFilePath = this.jacocoOutputDirPath + "\\" + jarFileToTest.getName().replaceAll("\\.", "_") + JACOCO_OUTPUT_FILE_SUFFIX;
 
 		outputFile.setJarFileName(initJarToTestPath);
 		try {
@@ -178,8 +180,7 @@ public class Tester {
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-			if (!TOOLCHAIN)
-				System.out.println("CLASS: " + mainClassTestBoundsName);
+			if (!TOOLCHAIN) System.out.println("CLASS: " + mainClassTestBoundsName);
 			// use reflection to invoke the TestBounds class to get the usage
 			// information from the jar
 			Method testBoundsMethod = null;
@@ -229,8 +230,8 @@ public class Tester {
 		int passCount = 0;
 		int failCount = 0;
 		StringBuffer resultToPrint = new StringBuffer();
-		
-		if(!TOOLCHAIN){
+
+		if (!TOOLCHAIN) {
 			System.out.println("Starting Basic Tests\n");
 		}
 
@@ -244,8 +245,8 @@ public class Tester {
 			for (Object o : test.getParameters()) {
 				result += o.toString();
 			}
-			outputFile.addBasicTest(new BasicTest(result, output.getStdOutString(), output.getStdErrString(),
-					test.getStdOutExpectedResultRegex(), test.getStdErrExpectedResultRegex()));
+			outputFile.addBasicTest(new BasicTest(result, output.getStdOutString(), output.getStdErrString(), test.getStdOutExpectedResultRegex(),
+					test.getStdErrExpectedResultRegex()));
 
 			resultToPrint.append(printBasicTestOutput(output));
 
@@ -263,18 +264,16 @@ public class Tester {
 				// the stdout
 				if (!output.getStdOutString().matches(test.getStdOutExpectedResultRegex())) {
 
-					resultToPrint.append("\t ->stdout: " + output.getStdOutString() + "\n"
-							+ "\t ->did not match expected stdout regex: " + test.getStdOutExpectedResultRegex()
-							+ "\n");
+					resultToPrint.append("\t ->stdout: " + output.getStdOutString() + "\n" + "\t ->did not match expected stdout regex: "
+							+ test.getStdOutExpectedResultRegex() + "\n");
 
 				}
 
 				// since we have a failed basic test, show the expectation for
 				// the stderr
 				if (!output.getStdErrString().matches(test.getStdErrExpectedResultRegex())) {
-					resultToPrint.append("\t ->stderr: " + output.getStdErrString() + "\n"
-							+ "\t ->did not match expected stderr regex: " + test.getStdErrExpectedResultRegex()
-							+ "\n");
+					resultToPrint.append("\t ->stderr: " + output.getStdErrString() + "\n" + "\t ->did not match expected stderr regex: "
+							+ test.getStdErrExpectedResultRegex() + "\n");
 				}
 			}
 			if (!TOOLCHAIN) {
@@ -286,10 +285,9 @@ public class Tester {
 		// print the basic test results and the code coverage associated with
 		// the basic tests
 		double percentCovered = generateSummaryCodeCoverageResults();
-		outputFile.setPercentCoveredForBasicTests((float) percentCovered);
 		if (!TOOLCHAIN) {
-			System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, "
-					+ failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
+			System.out.println("basic test results: " + (passCount + failCount) + " total, " + passCount + " pass, " + failCount + " fail, "
+					+ StringFormatter.clip(percentCovered, 2) + " percent covered");
 			System.out.println(HORIZONTAL_LINE);
 		}
 	}
@@ -305,7 +303,7 @@ public class Tester {
 		long timeToEnd = startTime + TIMEGOAL;
 		int testCount = 0;
 		int uniqueErrorCount = 0;
-		ArrayList<String> errors = new ArrayList<String>();//unique errors seen
+		ArrayList<String> errors = new ArrayList<String>();// unique errors seen
 
 		/*
 		 * There are five stages in our black box testing method for unbounded
@@ -339,10 +337,8 @@ public class Tester {
 		 * the time.
 		 */
 		long stageComparer;
-		if (STOPATBBTESTS)
-			stageComparer = BBTESTS;
-		else
-			stageComparer = (int) (TIMEGOAL);// total time
+		if (STOPATBBTESTS) stageComparer = BBTESTS;
+		else stageComparer = TIMEGOAL;// total time
 		long s1End = (long) (stageComparer * .05);
 		long s2End = (long) (stageComparer * .05 + s1End);
 		long s3End = (long) (stageComparer * .1 + s2End);
@@ -367,8 +363,7 @@ public class Tester {
 		List<String> nondependentParamsToTest = new ArrayList<String>();
 		if (!this.parameterFactory.isBounded()) {
 
-			allNondependentParams = this.parameterFactory.getNext(new ArrayList<String>()).get(0)
-					.getEnumerationValues();
+			allNondependentParams = this.parameterFactory.getNext(new ArrayList<String>()).get(0).getEnumerationValues();
 
 			for (String param : allNondependentParams) {
 				nondependentParamsToTest.add(generateValue(param, "appropriate"));
@@ -394,11 +389,12 @@ public class Tester {
 					dummyPrevParamString.add(allNondependentParams.get(k));
 
 					while (!potentialParameters.isEmpty()) {
-						dummyPrevParamString.add(
-								generateValue(potentialParameters.get(potentialParameters.size() - 1), "appropriate"));
+						dummyPrevParamString.add(generateValue(potentialParameters.get(potentialParameters.size() - 1), "appropriate"));
 						potentialParameters = this.parameterFactory.getNext(dummyPrevParamString);
-						if (!potentialParameters.isEmpty())
-							allDependentParamsLists.get(0).add(potentialParameters.remove(0));//CHANGED GET TO REMOVE
+						if (!potentialParameters.isEmpty()) allDependentParamsLists.get(0).add(potentialParameters.remove(0));// CHANGED
+																																// GET
+																																// TO
+																																// REMOVE
 					}
 					// if the enumerator is dependent, it is taken out of the
 					// allNondependentParams array.
@@ -416,23 +412,18 @@ public class Tester {
 		// performed.
 		String paramTestType = "";
 		ArrayList<String> parameters = new ArrayList<String>();// parameters to
-														
-		while (STOPATBBTESTS ? (testCount < BBTESTS || System.currentTimeMillis() < timeToEnd) : (System.currentTimeMillis() < timeToEnd)) {
-			
-			if(!TOOLCHAIN){
-				System.out.println("Security Test #" + (testCount+1));
-				if(STOPATBBTESTS && System.currentTimeMillis() < timeToEnd && testCount >= BBTESTS){
-					System.out.println("(running additional tests)");
-				}
+		// Used with modulus to determine the next test case
+		while (STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)) {
+
+			if (!TOOLCHAIN) {
+				System.out.println("Security Test #" + (testCount + 1));
 			}
-			
+
 			// changes what type of values should be generated based on
 			// the current stage of the test
-			if (STOPATBBTESTS && s2End > testCount
-					|| !STOPATBBTESTS && startTime + s2End > System.currentTimeMillis()) {
+			if (STOPATBBTESTS && s2End > testCount || !STOPATBBTESTS && startTime + s2End > System.currentTimeMillis()) {
 				paramTestType = "edge";
-			} else if (STOPATBBTESTS && s3End > testCount
-					|| !STOPATBBTESTS && startTime + s3End > System.currentTimeMillis()) {
+			} else if (STOPATBBTESTS && s3End > testCount || !STOPATBBTESTS && startTime + s3End > System.currentTimeMillis()) {
 				paramTestType = "inappropriate";
 			} else {
 				paramTestType = "appropriate";
@@ -444,11 +435,10 @@ public class Tester {
 				// at stage 1 and stage 4, we test 1 argument at a time
 				if ((STOPATBBTESTS && (testCount < s1End || testCount > s3End && testCount < s4End))
 						|| (!STOPATBBTESTS && (startTime + s1End > System.currentTimeMillis())
-								|| (startTime + s3End > System.currentTimeMillis())
-										&& (startTime + s4End > System.currentTimeMillis()))) {
+								|| (startTime + s3End > System.currentTimeMillis()) && (startTime + s4End > System.currentTimeMillis()))) {
 					// sometimes test a dependent arg, sometimes test one
 					// nondependent arg
-					if ((int) (Math.random() * 2) == 0) {
+					if (testCount % 2 == 0) {
 						numOfNondependentToTest = 1;
 					} else {
 						numOfDependentToTest = 1;
@@ -467,8 +457,7 @@ public class Tester {
 				// removes a nondependent parameter at a random index and
 				// adds its value to parameters
 				for (int k = 0; k < numOfNondependentToTest && allNondependentParams.size() != 0; k++) {
-					parameters.add(
-							nondependentParamsToTest.remove((int) (Math.random() * nondependentParamsToTest.size())));
+					parameters.add(nondependentParamsToTest.remove((int) (Math.random() * nondependentParamsToTest.size())));
 				}
 
 				// handling dependent parameters
@@ -477,8 +466,7 @@ public class Tester {
 				for (int r = 0; r < allDependentParamsLists.size(); r++) {
 					dependentParametersListsToTest.add(new ArrayList<Object>());
 					for (int c = 0; c < allDependentParamsLists.get(r).size(); c++) {
-						dependentParametersListsToTest.get(r)
-								.add(generateValue(allDependentParamsLists.get(r).get(c), paramTestType));
+						dependentParametersListsToTest.get(r).add(generateValue(allDependentParamsLists.get(r).get(c), paramTestType));
 					}
 				}
 
@@ -499,22 +487,20 @@ public class Tester {
 						// if its an enumerated value, it will add a random
 						// enumeration
 						parameters.add(generateValue(dependentParametersListsToTest.get(row).get(c), paramTestType));
-					} // TODO faulty logic leads to index out of bounds or
-						// something
+					} 
 					dependentParametersToTest.remove(row);
 					dependentParametersListsToTest.remove(row);
 				}
 
 				// if there are no nondependent parameters, we pass in a
 				// random string
-				if (allDependentParams.size() == 0)
-					parameters.add((new StringRange()).random(paramTestType));
+				if (allDependentParams.size() == 0) parameters.add((new StringRange()).random(paramTestType));
 			} else {// handles fixed parameters
 				for (int k = 0; k < this.parameterFactory.getFixedParametersList().size(); k++) {
 					parameters.add(generateValue(fixedParameters.get(k), paramTestType));
 				}
 			}
-			
+
 			// executes the security test
 			Output output = instrumentAndExecuteCode(parameters.toArray());
 			String result = new String();
@@ -522,9 +508,8 @@ public class Tester {
 				result += o.toString();
 			}
 			float covered = (float) generateSummaryCodeCoverageResults();
-			outputFile
-					.addSecurityTest(new SecurityTest(result, output.getStdOutString(), output.getStdErrString(), covered));
-				
+			outputFile.addSecurityTest(new SecurityTest(result, output.getStdOutString(), output.getStdErrString(), covered));
+
 			boolean passed = false;
 			if (paramTestType.equals("appropriate") || paramTestType.equals("edge")) {
 				if (output.getStdErrString().indexOf("Exception") != -1) {
@@ -538,69 +523,67 @@ public class Tester {
 			}
 			// if error is unique, adds it to the errors arrayList
 			if (output.getStdErrString().indexOf("Exception") != -1) {
-				if(uniqueErrorCount == 0){
+				if (uniqueErrorCount == 0) {
 					uniqueErrorCount++;
 				}
 				boolean newExceptionMessage = true;
 				for (int k = 0; k < errors.size(); k++) {
 					if (output.getStdErrString().equals(errors.get(k))) {
 						newExceptionMessage = false;
-					} else if(uniqueErrorCount == 0 || !output.getStdErrString().substring(output.getStdErrString().indexOf("java"), output.getStdErrString().indexOf("Exception",10)).equals(
-							errors.get(k).substring(errors.get(k).indexOf("java"), errors.get(k).indexOf("Exception",10)))){
+					} else if (uniqueErrorCount == 0 || !Utils.getErrorType(output.getStdErrString()).isEmpty()) {
 						uniqueErrorCount++;
 					}
 				}
-				if (newExceptionMessage)//if a unique exception message is seen, it is added to the list of errors
+				if (newExceptionMessage)// if a unique exception message is
+										// seen, it is added to the list of
+										// errors
 					errors.add(output.getStdErrString());
 			}
 			if (!TOOLCHAIN) {
 				System.out.print(printBasicTestOutput(output));
 				System.out.print("security test result: ");
-				if (passed){
+				if (passed) {
 					System.out.println("PASSED");
-				}
-				else{
+				} else {
 					System.out.println("FAILED");
 				}
 				System.out.println(HORIZONTAL_LINE);
 			}
-			if(passed)
-				passCount++;
-			else
-				failCount++;
+			if (passed) passCount++;
+			else failCount++;
 			parameters.clear();
 			testCount++;
 		}
+		finish(testCount, passCount, failCount, uniqueErrorCount, errors);
+
+	}
+
+	private void finish(int testCount, int passCount, int failCount, int uniqueErrorCount, ArrayList<String> errors) {
 		double percentCovered = generateSummaryCodeCoverageResults();
 		if (!TOOLCHAIN) {
-			
-			//tap into code coverage metrics
+
+			// tap into code coverage metrics
 			System.out.println(generateDetailedCodeCoverageResults());
-			
-			System.out.println(HORIZONTAL_LINE);
-			
-			System.out.println("security test results: " + testCount + " total, " + passCount + " pass, "
-					+ failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
 			System.out.println(HORIZONTAL_LINE + "\n");
-			
 
 		}
+
+		outputFile.setTotalPercentCovered((float) percentCovered);
 
 		// YAML output
 		System.out.println("Total predefined tests run: " + testCount);
 		System.out.println("Number of predefined tests that passed: " + passCount);
 		System.out.println("Number of predefined tests that failed: " + failCount);
-		System.out.println("Total code coverage percentage: " + percentCovered);
+		System.out.println("Total code coverage percentage: " + StringFormatter.clip(percentCovered, 2));
 		System.out.println("Unique error count: " + uniqueErrorCount);
 		System.out.println("Errors seen:");
 		for (String err : errors)
 			System.out.println("   -" + err);
-
 	}
 
 	/**
-	 * Method will return a values that corresponds to the type and
-	 * passed into the method.
+	 * Method will return a values that corresponds to the type and passed into
+	 * the method.
 	 * 
 	 * @param objectParameter
 	 *            is the parameter that the value will be generated from.
@@ -620,14 +603,11 @@ public class Tester {
 			Parameter parameter = (Parameter) objectParameter;
 			// if a parameter is optional, randomly decide whether to use it or
 			// not
-			if (parameter.isOptional() && (int) (Math.random() * 2) == 1) {
-				return "";
-			}
+			if (parameter.isOptional() && (int) (Math.random() * 2) == 1) { return ""; }
 			// If the parameter is enumerated, returns a random, formatted,
 			// enumerated value
 			if (parameter.isEnumeration()) {
-				String enumeratedValue = parameter.getEnumerationValues()
-						.get(parameter.getEnumerationValues().size() - 1);
+				String enumeratedValue = parameter.getEnumerationValues().get(parameter.getEnumerationValues().size() - 1);
 
 				// if the parameter has internal format (eg."<number>:<number>PM
 				// EST")
@@ -688,20 +668,18 @@ public class Tester {
 			Range range;
 			while (parameterString.indexOf("<<REPLACE_ME_INT>>") != -1) {
 				range = new IntRange();
-				parameterString = parameterString.substring(0, parameterString.indexOf("<<REPLACE_ME_INT>>"))
-						+ range.random(paramTestType)
+				parameterString = parameterString.substring(0, parameterString.indexOf("<<REPLACE_ME_INT>>")) + range.random(paramTestType)
 						+ parameterString.substring(parameterString.indexOf("<<REPLACE_ME_INT>>") + 18);
 			}
 			while (parameterString.indexOf("<<REPLACE_ME_STRING>>") != -1) {
 				range = new StringRange();
-				parameterString = parameterString.substring(0, parameterString.indexOf("<<REPLACE_ME_STRING>>"))
-						+ range.random(paramTestType)
+				parameterString = parameterString.substring(0, parameterString.indexOf("<<REPLACE_ME_STRING>>")) + range.random(paramTestType)
 						+ parameterString.substring(parameterString.indexOf("<<REPLACE_ME_STRING>>") + 21);
 			}
 		}
 		return parameterString;
 	}
-	
+
 	/**
 	 * This helper method will return a values that corresponds to the type and
 	 * passed into the method.
@@ -715,13 +693,14 @@ public class Tester {
 	 *            or "appropriate" for a value that is the same type of the
 	 *            parameter's type.
 	 * @param type
-	 * 			  is the class type of the value that the generateValue method should return
+	 *            is the class type of the value that the generateValue method
+	 *            should return
 	 * 
 	 * @returns a value to be executed as a parameter based on the parameter and
 	 *          the paramTestType.
 	 */
-	public String generateValue(Parameter parameter, String paramTestType, String type){
-		if(type.equals("Integer")){
+	public String generateValue(Parameter parameter, String paramTestType, String type) {
+		if (type.equals("Integer")) {
 			IntRange range = new IntRange();
 			if (parameter.getMax() != null) {
 				range.setMax((Integer) parameter.getMax());
@@ -730,8 +709,7 @@ public class Tester {
 				range.setMin((Integer) parameter.getMin());
 			}
 			return range.random(paramTestType);
-		}
-		else if(type.equals("Double")){
+		} else if (type.equals("Double")) {
 			DoubleRange range = new DoubleRange();
 			if (parameter.getMax() != null) {
 				range.setMax((Double) parameter.getMax());
@@ -740,8 +718,7 @@ public class Tester {
 				range.setMin((Double) parameter.getMin());
 			}
 			return range.random(paramTestType);
-		}
-		else{
+		} else {
 			StringRange range = new StringRange();
 			if (parameter.getMax() != null) {
 				range.setMaxLength((Integer) parameter.getMax());
@@ -753,10 +730,9 @@ public class Tester {
 		}
 	}
 
-	
-	
 	/**
 	 * Method will return the OHSFile generated by the tests.
+	 * 
 	 * @return the OHSFile generated by the tests
 	 */
 	public OHSFile getOHSFile() {
@@ -802,8 +778,7 @@ public class Tester {
 
 			// show the user the command to run and prepare the process using
 			// the command
-			if (!TOOLCHAIN)
-				System.out.println("command to run: " + command);
+			if (!TOOLCHAIN) System.out.println("command to run: " + command);
 			process = Runtime.getRuntime().exec(command);
 
 			// prepare the stream needed to capture standard output
@@ -855,7 +830,7 @@ public class Tester {
 				// and try again to monitor the streams
 				if (!outReady && !errReady) {
 					try {
-						Thread.sleep(5);
+						Thread.sleep(1);
 					} catch (InterruptedException e) {
 						// NOP
 					}
@@ -883,8 +858,7 @@ public class Tester {
 	 * @return
 	 */
 	private String printBasicTestOutput(Output output) {
-		return "stdout of execution: " + output.getStdOutString() + "\nstderr of execution: " + output.getStdErrString()
-				+ "\n";
+		return "stdout of execution: " + output.getStdOutString() + "\nstderr of execution: " + output.getStdErrString() + "\n";
 	}
 
 	/**
@@ -908,16 +882,14 @@ public class Tester {
 			});
 			reader.setExecutionDataVisitor(new IExecutionDataVisitor() {
 				public void visitClassExecution(final ExecutionData data) {
-					System.out.printf("%016x  %3d of %3d   %s%n", Long.valueOf(data.getId()),
-							Integer.valueOf(getHitCount(data.getProbes())), Integer.valueOf(data.getProbes().length),
-							data.getName());
+					System.out.printf("%016x  %3d of %3d   %s%n", Long.valueOf(data.getId()), Integer.valueOf(getHitCount(data.getProbes())),
+							Integer.valueOf(data.getProbes().length), data.getName());
 				}
 			});
 			reader.read();
 			in.close();
 		} catch (IOException e) {
-			System.out.println(
-					"Unable to display raw coverage stats due to IOException related to " + this.jacocoOutputFilePath);
+			System.out.println("Unable to display raw coverage stats due to IOException related to " + this.jacocoOutputFilePath);
 		}
 		System.out.println();
 	}
@@ -1072,7 +1044,5 @@ public class Tester {
 		final Integer totalCount = Integer.valueOf(counter.getTotalCount());
 		return missedCount.toString() + " of " + totalCount.toString() + " " + unit + " missed\n";
 	}
-
-	
 
 }
