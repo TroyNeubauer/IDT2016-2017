@@ -229,6 +229,10 @@ public class Tester {
 		int passCount = 0;
 		int failCount = 0;
 		StringBuffer resultToPrint = new StringBuffer();
+		
+		if(!TOOLCHAIN){
+			System.out.println("Starting Basic Tests\n");
+		}
 
 		// iterate through the lists of tests and execute each one
 		for (Test test : this.tests) {
@@ -293,13 +297,14 @@ public class Tester {
 	public void executeSecurityTests() {
 		if (!TOOLCHAIN) {
 			System.out.println();
-			System.out.println("Starting security tests");
+			System.out.println("Starting security tests\n");
 		}
 		int passCount = 0;
 		int failCount = 0;
 		long startTime = System.currentTimeMillis();
 		long timeToEnd = startTime + TIMEGOAL;
 		int testCount = 0;
+		int uniqueErrorCount = 0;
 		ArrayList<String> errors = new ArrayList<String>();//unique errors seen
 
 		/*
@@ -412,8 +417,15 @@ public class Tester {
 		String paramTestType = "";
 		ArrayList<String> parameters = new ArrayList<String>();// parameters to
 														
-		while (STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)) {
-
+		while (STOPATBBTESTS ? (testCount < BBTESTS || System.currentTimeMillis() < timeToEnd) : (System.currentTimeMillis() < timeToEnd)) {
+			
+			if(!TOOLCHAIN){
+				System.out.println("Security Test #" + (testCount+1));
+				if(STOPATBBTESTS && System.currentTimeMillis() < timeToEnd && testCount >= BBTESTS){
+					System.out.println("(running additional tests)");
+				}
+			}
+			
 			// changes what type of values should be generated based on
 			// the current stage of the test
 			if (STOPATBBTESTS && s2End > testCount
@@ -525,15 +537,20 @@ public class Tester {
 				passed = true;
 			}
 			// if error is unique, adds it to the errors arrayList
-			if (!output.getStdErrString().equals("")) {
-				boolean uniqueError = true;
+			if (output.getStdErrString().indexOf("Exception") != -1) {
+				if(uniqueErrorCount == 0){
+					uniqueErrorCount++;
+				}
+				boolean newExceptionMessage = true;
 				for (int k = 0; k < errors.size(); k++) {
 					if (output.getStdErrString().equals(errors.get(k))) {
-						uniqueError = false;
-						break;
+						newExceptionMessage = false;
+					} else if(uniqueErrorCount == 0 || !output.getStdErrString().substring(output.getStdErrString().indexOf("java"), output.getStdErrString().indexOf("Exception",10)).equals(
+							errors.get(k).substring(errors.get(k).indexOf("java"), errors.get(k).indexOf("Exception",10)))){
+						uniqueErrorCount++;
 					}
 				}
-				if (uniqueError)
+				if (newExceptionMessage)//if a unique exception message is seen, it is added to the list of errors
 					errors.add(output.getStdErrString());
 			}
 			if (!TOOLCHAIN) {
@@ -562,7 +579,7 @@ public class Tester {
 			
 			System.out.println(HORIZONTAL_LINE);
 			
-			System.out.println("security test results: " + (passCount + failCount) + " total, " + passCount + " pass, "
+			System.out.println("security test results: " + testCount + " total, " + passCount + " pass, "
 					+ failCount + " fail, " + StringFormatter.clip(percentCovered, 2) + " percent covered");
 			System.out.println(HORIZONTAL_LINE + "\n");
 			
@@ -574,19 +591,18 @@ public class Tester {
 		System.out.println("Number of predefined tests that passed: " + passCount);
 		System.out.println("Number of predefined tests that failed: " + failCount);
 		System.out.println("Total code coverage percentage: " + percentCovered);
-		System.out.println("Unique error count: " + errors.size());
+		System.out.println("Unique error count: " + uniqueErrorCount);
 		System.out.println("Errors seen:");
 		for (String err : errors)
 			System.out.println("   -" + err);
-		// showCodeCoverageResultsExample();
 
 	}
 
 	/**
-	 * Method will return an List of values that corresponds to the type and
+	 * Method will return a values that corresponds to the type and
 	 * passed into the method.
 	 * 
-	 * @param parameter
+	 * @param objectParameter
 	 *            is the parameter that the value will be generated from.
 	 * @param testParamType
 	 *            is the type of value that should be generated. type will have
@@ -621,11 +637,9 @@ public class Tester {
 					List<Object> formatVariableValues = new ArrayList<Object>();
 					for (Class type : parameter.getFormatVariables(enumeratedValue)) {
 						if (type == Integer.class) {
-							Range range = new IntRange();
-							formatVariableValues.add(range.random(paramTestType));
+							formatVariableValues.add(generateValue(parameter, paramTestType, "Integer"));
 						} else if (type == String.class) {
-							Range range = new StringRange();
-							formatVariableValues.add(range.random(paramTestType));
+							formatVariableValues.add(generateValue(parameter, paramTestType, "String"));
 						}
 					}
 					// build the formatted parameter string with the chosen
@@ -637,25 +651,10 @@ public class Tester {
 				// Integer, Double, or String
 			} else {
 				if (parameter.getType() == Integer.class) {
-					IntRange range = new IntRange();
-					if (parameter.getMax() != null) {
-						range.setMax((Integer) parameter.getMax());
-					}
-					if (parameter.getMin() != null) {
-						range.setMin((Integer) parameter.getMin());
-					}
-					parameterString = range.random(paramTestType) + " ";
+					parameterString = generateValue(parameter, paramTestType, "Integer") + " ";
 				} else if (parameter.getType() == Double.class) {
-					DoubleRange range = new DoubleRange();
-					if (parameter.getMax() != null) {
-						range.setMax((Double) parameter.getMax());
-					}
-					if (parameter.getMin() != null) {
-						range.setMin((Double) parameter.getMin());
-					}
-					parameterString = range.random(paramTestType) + " ";
+					parameterString = generateValue(parameter, paramTestType, "Double") + " ";
 				} else if (parameter.getType() == String.class) {
-					Range range = new StringRange();
 
 					// if the parameter has internal format (eg.
 					// "<number>:<number>PM EST")
@@ -666,17 +665,16 @@ public class Tester {
 						List<Object> formatVariableValues = new ArrayList<Object>();
 						for (Class type : parameter.getFormatVariables()) {
 							if (type == Integer.class) {
-								Range intRange = new IntRange();
-								formatVariableValues.add(intRange.random(paramTestType));
+								formatVariableValues.add(generateValue(parameter, paramTestType, "Integer"));
 							} else if (type == String.class) {
-								formatVariableValues.add(range.random(paramTestType));
+								generateValue(parameter, paramTestType, "String");
 							}
 						}
 						// build the formatted parameter string with the chosen
 						// values (eg. 1:1PM EST)
 						parameterString = parameter.getFormattedParameter(formatVariableValues);
 					} else {
-						parameterString = range.random(paramTestType);
+						parameterString = generateValue(parameter, paramTestType, "String");
 					}
 
 				} else {
@@ -702,6 +700,57 @@ public class Tester {
 			}
 		}
 		return parameterString;
+	}
+	
+	/**
+	 * This helper method will return a values that corresponds to the type and
+	 * passed into the method.
+	 * 
+	 * @param parameter
+	 *            is the parameter that the value will be generated from.
+	 * @param testParamType
+	 *            is the type of value that should be generated. type will have
+	 *            the value of either "edge" for edge cases, "inappropriate" for
+	 *            a value that is not of the same type of the parameter's type,
+	 *            or "appropriate" for a value that is the same type of the
+	 *            parameter's type.
+	 * @param type
+	 * 			  is the class type of the value that the generateValue method should return
+	 * 
+	 * @returns a value to be executed as a parameter based on the parameter and
+	 *          the paramTestType.
+	 */
+	public String generateValue(Parameter parameter, String paramTestType, String type){
+		if(type.equals("Integer")){
+			IntRange range = new IntRange();
+			if (parameter.getMax() != null) {
+				range.setMax((Integer) parameter.getMax());
+			}
+			if (parameter.getMin() != null) {
+				range.setMin((Integer) parameter.getMin());
+			}
+			return range.random(paramTestType);
+		}
+		else if(type.equals("Double")){
+			DoubleRange range = new DoubleRange();
+			if (parameter.getMax() != null) {
+				range.setMax((Double) parameter.getMax());
+			}
+			if (parameter.getMin() != null) {
+				range.setMin((Double) parameter.getMin());
+			}
+			return range.random(paramTestType);
+		}
+		else{
+			StringRange range = new StringRange();
+			if (parameter.getMax() != null) {
+				range.setMaxLength((Integer) parameter.getMax());
+			}
+			if (parameter.getMin() != null) {
+				range.setMinLength((Integer) parameter.getMin());
+			}
+			return range.random(paramTestType);
+		}
 	}
 
 	
@@ -1024,30 +1073,6 @@ public class Tester {
 		return missedCount.toString() + " of " + totalCount.toString() + " " + unit + " missed\n";
 	}
 
-	/**
-	 * This method is not meant to be part of the final framework. It was
-	 * included to demonstrate three different ways to tap into the code
-	 * coverage results/metrics using jacoco.
-	 * 
-	 * This method is deprecated and will be removed from the final product
-	 * after your team completes development. Please do not add additional
-	 * dependencies to this method.
-	 */
-	@Deprecated
-	private void showCodeCoverageResultsExample() {
-
-		// Below is the first example of how to tap into code coverage metrics
-		double result = generateSummaryCodeCoverageResults();
-		System.out.println("\n");
-		System.out.println("percent covered: " + StringFormatter.clip(result, 2));
-
-		// Below is the second example of how to tap into code coverage metrics
-		System.out.println("\n");
-		printRawCoverageStats();
-
-		// Below is the third example of how to tap into code coverage metrics
-		System.out.println("\n");
-		System.out.println(generateDetailedCodeCoverageResults());
-	}
+	
 
 }
