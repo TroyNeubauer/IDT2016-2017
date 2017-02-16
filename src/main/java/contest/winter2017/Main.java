@@ -3,8 +3,10 @@ package contest.winter2017;
 import java.io.*;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.cli.Options;
 
 import contest.winter2017.ohsfile.*;
+import contest.winter2017.reader.*;
 
 /**
  * Entry-point class for the black-box testing framework
@@ -210,7 +212,7 @@ public class Main {
 	 * @param outputFile
 	 */
 	private static void runReaderProgram(MainFile outputFile) {
-		
+		ReaderMain.main(new String[] {"open", outputFile.getMainFile().toString()});
 	}
 
 	/**
