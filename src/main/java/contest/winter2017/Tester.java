@@ -299,8 +299,7 @@ public class Tester {
 		long startTime = System.currentTimeMillis();
 		long timeToEnd = startTime + TIMEGOAL;
 		int testCount = 0;
-		int uniqueErrorCount = 0;
-		ArrayList<String> errors = new ArrayList<String>();// unique errors seen
+		Map<String, Integer> errors = new HashMap<String, Integer>();
 
 		/*
 		 * There are five stages in our black box testing method for unbounded
@@ -521,22 +520,14 @@ public class Tester {
 			}
 			// if error is unique, adds it to the errors arrayList
 			if (output.getStdErrString().indexOf("Exception") != -1) {
-				boolean newExceptionMessage = true;
-				boolean uniqueExceptionMessage = true;
-				for (int k = 0; k < errors.size(); k++) {
-					if (output.getStdErrString().equals(errors.get(k))) {
-						newExceptionMessage = false;
+				String error = Utils.getErrorType(output.getStdErrString());
+				if(!error.isEmpty()) {
+					if (!errors.containsKey(error)) {
+						errors.put(error, 1);
+					} else {
+						int count = errors.get(error);
+						errors.replace(error, count, count + 1);
 					}
-					if (Utils.getErrorType(output.getStdErrString()).equals(Utils.getErrorType(errors.get(k)))) {
-						uniqueExceptionMessage = false;
-					}
-				}
-				if (newExceptionMessage)// if a unique exception message is
-										// seen, it is added to the list of
-										// errors
-					errors.add(output.getStdErrString());
-				if(uniqueExceptionMessage){
-					uniqueErrorCount++;
 				}
 			}
 			if (!TOOLCHAIN) {
@@ -554,11 +545,11 @@ public class Tester {
 			parameters.clear();
 			testCount++;
 		}
-		finish(testCount, passCount, failCount, uniqueErrorCount, errors);
+		finish(testCount, passCount, failCount, errors);
 
 	}
 
-	private void finish(int testCount, int passCount, int failCount, int uniqueErrorCount, ArrayList<String> errors) {
+	private void finish(int testCount, int passCount, int failCount, Map<String, Integer> errors) {
 		double percentCovered = generateSummaryCodeCoverageResults();
 		if (!TOOLCHAIN) {
 
@@ -575,9 +566,13 @@ public class Tester {
 		System.out.println("Number of predefined tests that passed: " + passCount);
 		System.out.println("Number of predefined tests that failed: " + failCount);
 		System.out.println("Total code coverage percentage: " + StringFormatter.clip(percentCovered, 2));
+		int uniqueErrorCount = 0;
+		for(Integer count : errors.values()) {
+			uniqueErrorCount += count.intValue();
+		}
 		System.out.println("Unique error count: " + uniqueErrorCount);
 		System.out.println("Errors seen:");
-		for (String err : errors)
+		for (String err : errors.keySet())
 			System.out.println("   -" + err);
 	}
 

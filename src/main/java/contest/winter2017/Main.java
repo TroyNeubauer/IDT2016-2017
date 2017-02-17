@@ -2,8 +2,12 @@ package contest.winter2017;
 
 import java.io.*;
 
+import javax.activity.*;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.cli.Options;
+
+import com.troyberry.util.*;
 
 import contest.winter2017.ohsfile.*;
 import contest.winter2017.reader.*;
@@ -71,7 +75,7 @@ public class Main {
 	 * weather or not saving is disabled (enabled by default)
 	 */
 	public static final String DISABLE_OHS_SAVE = "disableSaving";
-	
+
 	/**
 	 * the name of the OHS file
 	 */
@@ -92,6 +96,14 @@ public class Main {
 	 *            - String array of command line arguments
 	 */
 	public static void main(String[] args) {
+		String s = "";
+		if(true) {
+			try {
+				throw new InvalidActivityException();
+			}catch(Exception e) {
+				s = MiscUtil.getStackTrace(e);
+			}
+		}
 
 		CommandLineParser parser = new DefaultParser();
 
@@ -124,10 +136,12 @@ public class Main {
 					// the Tester class contains all of the logic for the
 					// testing framework
 					int bbTests = 1000;
-					long timeGoal = 5 * 60 * 1000;// 5 minutes * 60 seconds per minutes * 1000 MS per second
+					long timeGoal = 5 * 60 * 1000;// 5 minutes * 60 seconds per
+													// minutes * 1000 MS per
+													// second
 					boolean toolChain = false;
-					
-					//Parse the arguments and set the values
+
+					// Parse the arguments and set the values
 					if (cliArgs.hasOption(BLACK_BOX_TESTS)) {
 						if (Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS)) < 0) {
 							System.out.println("An illegal argument was entered. Please enter a positive integer.");
@@ -147,11 +161,11 @@ public class Main {
 						timeGoal = Long.parseLong(cliArgs.getOptionValue(TIME_GOAL)) * 60L * 1000L;
 						hasTimeGoal = true;
 					}
-					
+
 					if (cliArgs.hasOption(SAVE_NAME)) {
 						saveName = cliArgs.getOptionValue(SAVE_NAME);
 					}
-					
+
 					if (cliArgs.hasOption(TOOL_CHAIN)) {
 						toolChain = true;
 					}
@@ -190,7 +204,7 @@ public class Main {
 						if (!disableSaving) {
 							MainFile outputFile = null;
 							OHSFile file = tester.getOHSFile();
-							if(saveName != null) file.setName(saveName);
+							if (saveName != null) file.setName(saveName);
 							try {
 								outputFile = MainFile.create(OHSFileSaveLocation);
 								OHSFileIO.write(file, outputFile);
@@ -203,7 +217,7 @@ public class Main {
 					}
 
 				} else if (cliArgs.hasOption(HELP) || cliArgs.hasOption(ALT_HELP) || cliArgs.hasOption(TOOL_CHAIN)) {
-					
+
 					printHelp(options);
 
 				} else {
