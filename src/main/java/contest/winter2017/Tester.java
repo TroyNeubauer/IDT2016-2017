@@ -84,25 +84,16 @@ public class Tester {
 	 */
 	private final boolean TOOLCHAIN;
 
-	/**
-	 * if false, bbTests was not specified but a timeGoal was not
-	 */
-	private final boolean STOPATBBTESTS;
-
 	private final OHSFile outputFile;
 
 
-	public Tester(int bbTests, long timeGoal, boolean toolChain, boolean stopAtBBTests) {
-		if(Main.DEBUG) {
-			if(stopAtBBTests)System.out.println("stopping at " + bbTests + " bb tests");
-			else System.out.println("stopping after " + timeGoal + " MS");
-		}
+	public Tester(int bbTests, long timeGoal, boolean toolChain) {
+		
 		this.outputFile = new OHSFile();
 		outputFile.setTimestamp(System.currentTimeMillis());
 		this.BBTESTS = bbTests;
 		this.TIMEGOAL = timeGoal;
 		this.TOOLCHAIN = toolChain;
-		this.STOPATBBTESTS = stopAtBBTests;
 
 	}
 
@@ -288,8 +279,18 @@ public class Tester {
 		}
 	}
 
-	public void executeSecurityTests() {
+	public void executeSecurityTests(boolean hasTimeGoal, boolean hasBBTests, boolean stopAtBBTests) {
+		System.out.println(hasTimeGoal + ""+hasBBTests);
 		if (!TOOLCHAIN) {
+			if(Main.DEBUG) {
+				if(stopAtBBTests && hasTimeGoal || !(stopAtBBTests && hasTimeGoal)){
+					System.out.println("stopping at " + BBTESTS + " security tests\n"+ 
+							"will run additional tests if time goal of " + (TIMEGOAL / 60 / 1000) + 
+								" minutes has not been reached");
+				}
+				if(stopAtBBTests)System.out.println("stopping at " + BBTESTS + " security tests");
+				else System.out.println("stopping after " + (TIMEGOAL / 60 / 1000) + " minutes");
+			}
 			System.out.println();
 			System.out.println("Starting security tests\n");
 		}
@@ -333,7 +334,7 @@ public class Tester {
 		 * the time.
 		 */
 		long stageComparer;
-		if (STOPATBBTESTS) stageComparer = BBTESTS;
+		if (stopAtBBTests) stageComparer = BBTESTS;
 		else stageComparer = TIMEGOAL;// total time
 		long s1End = (long) (stageComparer * .05);
 		long s2End = (long) (stageComparer * .05 + s1End);
@@ -407,17 +408,20 @@ public class Tester {
 		String paramTestType = "";
 		ArrayList<String> parameters = new ArrayList<String>();// parameters to
 		// Used with modulus to determine the next test case
-		while (STOPATBBTESTS ? (testCount < BBTESTS) : (System.currentTimeMillis() < timeToEnd)) {
+		while (stopAtBBTests ? (testCount < BBTESTS || hasTimeGoal && System.currentTimeMillis() < timeToEnd) : (System.currentTimeMillis() < timeToEnd)) {
 
 			if (!TOOLCHAIN) {
 				System.out.println("Security Test #" + (testCount + 1));
+				if(stopAtBBTests && testCount > BBTESTS && hasTimeGoal && System.currentTimeMillis() < timeToEnd){
+					System.out.println("(running additional tests)");
+				}
 			}
 
 			// changes what type of values should be generated based on
 			// the current stage of the test
-			if (STOPATBBTESTS && s2End > testCount || !STOPATBBTESTS && startTime + s2End > System.currentTimeMillis()) {
+			if (stopAtBBTests && s2End > testCount || !stopAtBBTests && startTime + s2End > System.currentTimeMillis()) {
 				paramTestType = "edge";
-			} else if (STOPATBBTESTS && s3End > testCount || !STOPATBBTESTS && startTime + s3End > System.currentTimeMillis()) {
+			} else if (stopAtBBTests && s3End > testCount || !stopAtBBTests && startTime + s3End > System.currentTimeMillis()) {
 				paramTestType = "inappropriate";
 			} else {
 				paramTestType = "appropriate";
@@ -427,8 +431,8 @@ public class Tester {
 				int numOfNondependentToTest = 0;
 				int numOfDependentToTest = 0;
 				// at stage 1 and stage 4, we test 1 argument at a time
-				if ((STOPATBBTESTS && (testCount < s1End || testCount > s3End && testCount < s4End))
-						|| (!STOPATBBTESTS && (startTime + s1End > System.currentTimeMillis())
+				if ((stopAtBBTests && (testCount < s1End || testCount > s3End && testCount < s4End))
+						|| (!stopAtBBTests && (startTime + s1End > System.currentTimeMillis())
 								|| (startTime + s3End > System.currentTimeMillis()) && (startTime + s4End > System.currentTimeMillis()))) {
 					// sometimes test a dependent arg, sometimes test one
 					// nondependent arg

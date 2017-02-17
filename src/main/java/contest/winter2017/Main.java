@@ -104,7 +104,7 @@ public class Main {
 		options.addOption(BLACK_BOX_TESTS, true, "Number of black box test to be executed");
 		options.addOption(TIME_GOAL, true, "Test time goal in minutes");
 		options.addOption(TOOL_CHAIN, false, "Output only the YAML report");
-		options.addOption(OHS_FILE_OUTPUT, true, "Where to save the custom file to");
+		options.addOption(OHS_FILE_OUTPUT, true, "Where to save the custom file holding test information to");
 		options.addOption(DISABLE_OHS_SAVE, false, "Disable saving to an OHS file after testing is complete");
 		options.addOption(SAVE_NAME, true, "A name for the OHS file");
 
@@ -182,11 +182,11 @@ public class Main {
 					// They specified both
 					if (hasTimeGoal && hasBBtests) stopAtBBTests = true;
 
-					Tester tester = new Tester(bbTests, timeGoal, toolChain, stopAtBBTests);
+					Tester tester = new Tester(bbTests, timeGoal, toolChain);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
 
 						tester.executeBasicTests();
-						tester.executeSecurityTests();
+						tester.executeSecurityTests(hasTimeGoal, hasBBtests, stopAtBBTests);
 						if (!disableSaving) {
 							MainFile outputFile = null;
 							OHSFile file = tester.getOHSFile();
