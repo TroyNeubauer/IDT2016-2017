@@ -15,9 +15,8 @@ public class Utils {
 		try {
 			int endIndex = stackTrace.indexOf("Exception", "Exception".length()) + "Exception".length();
 			int beginIndex = endIndex -1;
-			while (beginIndex >= 0 && stackTrace.substring(beginIndex, endIndex).indexOf(" ") != -1) {
+			while (beginIndex >= 0 && stackTrace.substring(beginIndex, endIndex).indexOf(" ") == -1) {
 				beginIndex--;
-				System.out.println("test" + stackTrace.substring(beginIndex +1, endIndex));
 			}
 			return stackTrace.substring(beginIndex +1, endIndex);
 		} catch (java.lang.StringIndexOutOfBoundsException e) {

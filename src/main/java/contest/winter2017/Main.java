@@ -171,6 +171,7 @@ public class Main {
 					if (!hasTimeGoal && !hasBBtests) {
 						stopAtBBTests = true;
 						bbTests = 1000;
+						timeGoal = 5 * 60L * 1000L;
 					}
 					// They specified BB tests but not time goal
 					if (!hasTimeGoal && hasBBtests) stopAtBBTests = true;

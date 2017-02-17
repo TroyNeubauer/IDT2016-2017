@@ -85,7 +85,7 @@ public class Tester {
 	private final boolean TOOLCHAIN;
 
 	/**
-	 * if false, bbTests was not specified but a timeGoal was
+	 * if false, bbTests was not specified but a timeGoal was not
 	 */
 	private final boolean STOPATBBTESTS;
 
@@ -100,11 +100,7 @@ public class Tester {
 		this.outputFile = new OHSFile();
 		outputFile.setTimestamp(System.currentTimeMillis());
 		this.BBTESTS = bbTests;
-		this.TIMEGOAL = timeGoal; // If user didn't enter a time goal, this
-									// number will be negative. if we don't set
-									// a variable called time to end and instead
-									// do currenttime-timegoal >0 this can work
-									// bc there is no time goal
+		this.TIMEGOAL = timeGoal;
 		this.TOOLCHAIN = toolChain;
 		this.STOPATBBTESTS = stopAtBBTests;
 
@@ -401,9 +397,7 @@ public class Tester {
 					allNondependentParams.remove(k);
 				}
 			}
-		} else {
-
-		}
+		} 
 
 		// STARTING TESTS
 		// while there are still more bbTests to run or the correct number
@@ -523,18 +517,15 @@ public class Tester {
 			}
 			// if error is unique, adds it to the errors arrayList
 			if (output.getStdErrString().indexOf("Exception") != -1) {
-				if (uniqueErrorCount == 0) {
-					uniqueErrorCount++;
-				}
 				boolean newExceptionMessage = true;
 				boolean uniqueExceptionMessage = true;
 				for (int k = 0; k < errors.size(); k++) {
 					if (output.getStdErrString().equals(errors.get(k))) {
 						newExceptionMessage = false;
-					} else if (Utils.getErrorType(output.getStdErrString()).equals(Utils.getErrorType(errors.get(k)))) {
+					}
+					if (Utils.getErrorType(output.getStdErrString()).equals(Utils.getErrorType(errors.get(k)))) {
 						uniqueExceptionMessage = false;
 					}
-					//System.out.println(Utils.getErrorType(output.getStdErrString()) + (Utils.getErrorType(errors.get(k))));
 				}
 				if (newExceptionMessage)// if a unique exception message is
 										// seen, it is added to the list of
