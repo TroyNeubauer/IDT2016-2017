@@ -15,7 +15,7 @@ public class StringRange extends Range<String> {
 		super();
 		this.minLength = 1;
 		this.maxLength = 50;
-		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+/?,.<>/*\\`~[] {}";
+		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+/?,.<>/*\\`~[] {}  ";
 	}
 
 	/**
@@ -112,7 +112,7 @@ public class StringRange extends Range<String> {
 	 */
 	@Override
 	public String getGeneralEdgeCase() {
-		String[] edges = { "", "\"         \"", ",~`" };
+		String[] edges = { "", "\"         \""};
 		return edges[(int) (Math.random() * edges.length)];
 	}
 

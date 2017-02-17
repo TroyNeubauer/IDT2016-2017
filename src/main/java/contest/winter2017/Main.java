@@ -65,7 +65,7 @@ public class Main {
 	/**
 	 * where to save the resulting data to
 	 */
-	public static final String OHS_FILE_OUTPUT = "save";
+	public static final String OHS_FILE_OUTPUT = "saveTo";
 
 	/**
 	 * weather or not saving is disabled (enabled by default)

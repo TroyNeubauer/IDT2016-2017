@@ -13,15 +13,13 @@ public class Utils {
 	 */
 	public static String getErrorType(String stackTrace) {
 		try {
-			int index = stackTrace.indexOf("java");
-			if (index >= 0) {
-				int next = posativeMin(stackTrace.indexOf(' ', index), stackTrace.indexOf('\t', index));
-				String s = (stackTrace.substring(index, next));
-				if(s.charAt(s.length() - 1) == ':') {
-					s = s.substring(0, s.length() - 1);
-				}
-				return s;
+			int endIndex = stackTrace.indexOf("Exception", "Exception".length()) + "Exception".length();
+			int beginIndex = endIndex -1;
+			while (beginIndex >= 0 && stackTrace.substring(beginIndex, endIndex).indexOf(" ") != -1) {
+				beginIndex--;
+				System.out.println("test" + stackTrace.substring(beginIndex +1, endIndex));
 			}
+			return stackTrace.substring(beginIndex +1, endIndex);
 		} catch (java.lang.StringIndexOutOfBoundsException e) {
 		}
 		return "";

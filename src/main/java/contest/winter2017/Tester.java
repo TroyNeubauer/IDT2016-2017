@@ -527,17 +527,22 @@ public class Tester {
 					uniqueErrorCount++;
 				}
 				boolean newExceptionMessage = true;
+				boolean uniqueExceptionMessage = true;
 				for (int k = 0; k < errors.size(); k++) {
 					if (output.getStdErrString().equals(errors.get(k))) {
 						newExceptionMessage = false;
-					} else if (uniqueErrorCount == 0 || !Utils.getErrorType(output.getStdErrString()).isEmpty()) {
-						uniqueErrorCount++;
+					} else if (Utils.getErrorType(output.getStdErrString()).equals(Utils.getErrorType(errors.get(k)))) {
+						uniqueExceptionMessage = false;
 					}
+					//System.out.println(Utils.getErrorType(output.getStdErrString()) + (Utils.getErrorType(errors.get(k))));
 				}
 				if (newExceptionMessage)// if a unique exception message is
 										// seen, it is added to the list of
 										// errors
 					errors.add(output.getStdErrString());
+				if(uniqueExceptionMessage){
+					uniqueErrorCount++;
+				}
 			}
 			if (!TOOLCHAIN) {
 				System.out.print(printBasicTestOutput(output));
