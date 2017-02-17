@@ -187,14 +187,14 @@ public class Main {
 						bbTests = 1000;
 						timeGoal = 5 * 60L * 1000L;
 					}
-					// They specified BB tests but not time goal
+					// They specified BB tests but not time goal - stop at the defaulket bbTests of 1000
 					if (!hasTimeGoal && hasBBtests) stopAtBBTests = true;
 
-					// They didn't specify BB but specified time goal
+					// They didn't specify BB but specified time goal - stop at bbtests
 					if (hasTimeGoal && !hasBBtests) stopAtBBTests = false;
 
-					// They specified both
-					if (hasTimeGoal && hasBBtests) stopAtBBTests = true;
+					// They specified both - stop at time goal
+					if (hasTimeGoal && hasBBtests) stopAtBBTests = false;
 
 					Tester tester = new Tester(bbTests, timeGoal, toolChain);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
@@ -207,7 +207,7 @@ public class Main {
 							if (saveName != null) file.setName(saveName);
 							try {
 								outputFile = MainFile.create(OHSFileSaveLocation);
-								OHSFileIO.write(file, outputFile);
+								OHSFileIO.write(file, outputFile, toolChain);
 							} catch (IOException e) {
 								System.err.println("Unable to generate results file!");
 								e.printStackTrace();

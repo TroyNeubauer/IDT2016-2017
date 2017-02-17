@@ -105,7 +105,6 @@ public class ReaderMain {
 				System.out.println(file + " doesn't exist!");
 				System.exit(1);
 			}
-			System.out.println("Opeing file " + file);
 		}
 		return file;
 	}

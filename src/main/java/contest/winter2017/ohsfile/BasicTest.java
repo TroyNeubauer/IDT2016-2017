@@ -14,7 +14,7 @@ public class BasicTest extends ExecutedTest {
 		super(argsUsed, outputOut, outputErr);
 		this.expectedOut = expectedOut;
 		this.expectedErr = expectedErr;
-		this.pass = expectedOut.equals(outputOut) && expectedErr.equals(outputErr);
+		this.pass = outputOut.matches(expectedOut) && outputErr.matches(expectedErr);
 	}
 
 	public boolean isPass() {

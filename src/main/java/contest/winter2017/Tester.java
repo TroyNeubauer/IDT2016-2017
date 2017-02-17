@@ -283,11 +283,6 @@ public class Tester {
 		if (!TOOLCHAIN) {
 			if(Main.DEBUG) {
 				if(hasTimeGoal && !stopAtBBTests) System.out.println("stopping after " + (TIMEGOAL / 60 / 1000) + " minutes");
-				else if(stopAtBBTests && hasTimeGoal || !(stopAtBBTests && hasTimeGoal)){
-					System.out.println("stopping at " + BBTESTS + " security tests\n"+ 
-							"will run additional tests if time goal of " + (TIMEGOAL / 60 / 1000) + 
-								" minutes has not been reached");
-				}
 				else if(stopAtBBTests)System.out.println("stopping at " + BBTESTS + " security tests");
 				
 			}
@@ -573,7 +568,7 @@ public class Tester {
 		System.out.println("Unique error count: " + uniqueErrorCount);
 		System.out.println("Errors seen:");
 		for (String err : errors.keySet())
-			System.out.println("   -" + err);
+			System.out.println("\t-" + err);
 	}
 
 	/**

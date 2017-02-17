@@ -2,8 +2,6 @@ package contest.winter2017.range;
 
 import com.troyberry.math.*;
 
-import regexpatternmatch.*;
-
 public class StringRange extends Range<String> {
 
 	private int minLength, maxLength;
@@ -17,7 +15,7 @@ public class StringRange extends Range<String> {
 		super();
 		this.minLength = 1;
 		this.maxLength = 50;
-		this.charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890  !@#%^&*()_+<>?:\";''";
+		this.charSet = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#%^&*()_+<>?:\t\n\\\"';";
 	}
 
 	/**
@@ -114,7 +112,12 @@ public class StringRange extends Range<String> {
 	 */
 	@Override
 	public String getGeneralEdgeCase() {
-		String[] edges = { "", "\"         \"",};
+		String randomChars = new String();
+		int size = Maths.randRange(5, 100);
+		for(int i = 0; i < size; i++) {
+			randomChars += ((char)Maths.randRange(0, Short.MAX_VALUE));
+		}
+		String[] edges = {randomChars, "", "\t", "\n", "\"         \"", ((char)Maths.randRange(0, Short.MAX_VALUE)) + "", ((char)Maths.randRange(0, Byte.MAX_VALUE)) + ""};
 		return edges[(int) (Math.random() * edges.length)];
 	}
 
