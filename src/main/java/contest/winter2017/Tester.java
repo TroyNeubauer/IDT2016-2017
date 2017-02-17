@@ -561,11 +561,7 @@ public class Tester {
 		System.out.println("Number of predefined tests that passed: " + passCount);
 		System.out.println("Number of predefined tests that failed: " + failCount);
 		System.out.println("Total code coverage percentage: " + StringFormatter.clip(percentCovered, 2));
-		int uniqueErrorCount = 0;
-		for(Integer count : errors.values()) {
-			uniqueErrorCount += count.intValue();
-		}
-		System.out.println("Unique error count: " + uniqueErrorCount);
+		System.out.println("Unique error count: " + errors.size());
 		System.out.println("Errors seen:");
 		for (String err : errors.keySet())
 			System.out.println("\t-" + err);
