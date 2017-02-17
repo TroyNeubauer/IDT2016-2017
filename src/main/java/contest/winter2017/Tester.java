@@ -280,16 +280,16 @@ public class Tester {
 	}
 
 	public void executeSecurityTests(boolean hasTimeGoal, boolean hasBBTests, boolean stopAtBBTests) {
-		System.out.println(hasTimeGoal + ""+hasBBTests);
 		if (!TOOLCHAIN) {
 			if(Main.DEBUG) {
-				if(stopAtBBTests && hasTimeGoal || !(stopAtBBTests && hasTimeGoal)){
+				if(hasTimeGoal && !stopAtBBTests) System.out.println("stopping after " + (TIMEGOAL / 60 / 1000) + " minutes");
+				else if(stopAtBBTests && hasTimeGoal || !(stopAtBBTests && hasTimeGoal)){
 					System.out.println("stopping at " + BBTESTS + " security tests\n"+ 
 							"will run additional tests if time goal of " + (TIMEGOAL / 60 / 1000) + 
 								" minutes has not been reached");
 				}
-				if(stopAtBBTests)System.out.println("stopping at " + BBTESTS + " security tests");
-				else System.out.println("stopping after " + (TIMEGOAL / 60 / 1000) + " minutes");
+				else if(stopAtBBTests)System.out.println("stopping at " + BBTESTS + " security tests");
+				
 			}
 			System.out.println();
 			System.out.println("Starting security tests\n");
