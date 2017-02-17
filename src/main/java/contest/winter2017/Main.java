@@ -15,7 +15,7 @@ import contest.winter2017.reader.*;
  */
 @SuppressWarnings("all")
 public class Main {
-	
+
 	public static boolean DEBUG = true;
 
 	public static File OHSFileSaveLocation = null;
@@ -71,6 +71,11 @@ public class Main {
 	 * weather or not saving is disabled (enabled by default)
 	 */
 	public static final String DISABLE_OHS_SAVE = "disableSaving";
+	
+	/**
+	 * the name of the OHS file
+	 */
+	public static final String SAVE_NAME = "saveName";
 
 	/**
 	 * weather or not saving is disabled (enabled by default)
@@ -78,6 +83,7 @@ public class Main {
 	private static boolean disableSaving = false;
 
 	private static boolean hasTimeGoal, hasBBtests = false;
+	private static String saveName;
 
 	/**
 	 * Entry-point method for the black-box testing framework
@@ -90,16 +96,17 @@ public class Main {
 		CommandLineParser parser = new DefaultParser();
 
 		Options options = new Options();
-		options.addOption(JAR_TO_TEST_PATH, true, "path to the executable jar to test");
-		options.addOption(JACOCO_OUTPUT_PATH, true, "path to directory for jacoco output");
-		options.addOption(JACOCO_AGENT_JAR_PATH, true, "path to the jacoco agent jar");
-		options.addOption(HELP, false, "help");
-		options.addOption(ALT_HELP, false, "help");
-		options.addOption(BLACK_BOX_TESTS, true, "number of black box test to be executed");
-		options.addOption(TIME_GOAL, true, "test time goal in minutes");
-		options.addOption(TOOL_CHAIN, false, "output only the YAML report");
-		options.addOption(OHS_FILE_OUTPUT, true, "where to save the custom file to");
-		options.addOption(DISABLE_OHS_SAVE, false, "disable saving to an OHS file after testing is complete");
+		options.addOption(JAR_TO_TEST_PATH, true, "Path to the executable jar to test");
+		options.addOption(JACOCO_OUTPUT_PATH, true, "Path to directory for jacoco output");
+		options.addOption(JACOCO_AGENT_JAR_PATH, true, "Path to the jacoco agent jar");
+		options.addOption(HELP, false, "Help");
+		options.addOption(ALT_HELP, false, "Help");
+		options.addOption(BLACK_BOX_TESTS, true, "Number of black box test to be executed");
+		options.addOption(TIME_GOAL, true, "Test time goal in minutes");
+		options.addOption(TOOL_CHAIN, false, "Output only the YAML report");
+		options.addOption(OHS_FILE_OUTPUT, true, "Where to save the custom file to");
+		options.addOption(DISABLE_OHS_SAVE, false, "Disable saving to an OHS file after testing is complete");
+		options.addOption(SAVE_NAME, true, "A name for the OHS file");
 
 		try {
 			CommandLine cliArgs = parser.parse(options, args);
@@ -117,11 +124,10 @@ public class Main {
 					// the Tester class contains all of the logic for the
 					// testing framework
 					int bbTests = 1000;
-					long timeGoal = 5 * 60 * 1000;// 5 minuites * 60 seconds per
-													// minuite * 1000 ms per
-													// second
+					long timeGoal = 5 * 60 * 1000;// 5 minutes * 60 seconds per minutes * 1000 MS per second
 					boolean toolChain = false;
-
+					
+					//Parse the arguments and set the values
 					if (cliArgs.hasOption(BLACK_BOX_TESTS)) {
 						if (Integer.parseInt(cliArgs.getOptionValue(BLACK_BOX_TESTS)) < 0) {
 							System.out.println("An illegal argument was entered. Please enter a positive integer.");
@@ -141,6 +147,11 @@ public class Main {
 						timeGoal = Long.parseLong(cliArgs.getOptionValue(TIME_GOAL)) * 60L * 1000L;
 						hasTimeGoal = true;
 					}
+					
+					if (cliArgs.hasOption(SAVE_NAME)) {
+						saveName = cliArgs.getOptionValue(SAVE_NAME);
+					}
+					
 					if (cliArgs.hasOption(TOOL_CHAIN)) {
 						toolChain = true;
 					}
@@ -163,25 +174,25 @@ public class Main {
 					}
 					// They specified BB tests but not time goal
 					if (!hasTimeGoal && hasBBtests) stopAtBBTests = true;
-					
+
 					// They didn't specify BB but specified time goal
 					if (hasTimeGoal && !hasBBtests) stopAtBBTests = false;
 
 					// They specified both
 					if (hasTimeGoal && hasBBtests) stopAtBBTests = true;
-					
+
 					Tester tester = new Tester(bbTests, timeGoal, toolChain, stopAtBBTests);
 					if (tester.init(jarToTestPath, jacocoOutputDirPath, jacocoAgentJarPath)) {
 
 						tester.executeBasicTests();
-						// TODO pseudo values have been set for the ranges, fix
-						// later
 						tester.executeSecurityTests();
 						if (!disableSaving) {
 							MainFile outputFile = null;
+							OHSFile file = tester.getOHSFile();
+							if(saveName != null) file.setName(saveName);
 							try {
 								outputFile = MainFile.create(OHSFileSaveLocation);
-								OHSFileIO.write(tester.getOHSFile(), outputFile);
+								OHSFileIO.write(file, outputFile);
 							} catch (IOException e) {
 								System.err.println("Unable to generate results file!");
 								e.printStackTrace();
@@ -191,7 +202,7 @@ public class Main {
 					}
 
 				} else if (cliArgs.hasOption(HELP) || cliArgs.hasOption(ALT_HELP) || cliArgs.hasOption(TOOL_CHAIN)) {
-
+					
 					printHelp(options);
 
 				} else {
@@ -209,10 +220,11 @@ public class Main {
 
 	/**
 	 * Runs the reader program
+	 * 
 	 * @param outputFile
 	 */
 	private static void runReaderProgram(MainFile outputFile) {
-		ReaderMain.main(new String[] {"open", outputFile.getMainFile().toString()});
+		ReaderMain.main(new String[] { "open", outputFile.getMainFile().toString() });
 	}
 
 	/**
