@@ -48,10 +48,6 @@ public class MenuBar extends JMenuBar {
 		options.add(refreshItem);
 		
 		add(options);
-		
-		JMenu help = new JMenu("Help");
-		help.add(new JMenuItem("Open Help", helpIcon));
-		add(help);
 	}
 
 }
