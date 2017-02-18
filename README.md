@@ -4,7 +4,7 @@
 This Black Box Testing application allows a user to test a jar file of the specified format without having access to the source code of said jar. The results from each test will be printed as tests are being executed. Code coverage details, along with a report in YAML format that summarizes results from the testing session, are printed once testing is completed. The tests run on the software under test (SUT) is saved in a file which can be viewed via the OHS File Reader Program. At the end of the testing period, the OHS File Reader Program will be opened wherein the user may sort through and view past tests conducted using this software.
 
 For in depth analysis of the testing sessions, we recommend utilizing the reader program to view and sort through executed test results.
-
+This software usues Troy Berry Core for basic random number generation: https://github.com/TroyNeubauer/Troy-Berry-Core
 
 #2) System requirements
 The Black Box Testing application is written purely in Java 8 so it is important to have the correct Java version installed.
